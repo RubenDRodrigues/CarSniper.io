@@ -18,17 +18,14 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+firebase.initializeApp(config);
+var database = firebase.database();
+var ref = database.ref('');
+ref.on('value', function(snapshot) {
+    snapshot.forEach(function(childSnapshot) {
+      console.log(childSnapshot)
 
-const database = firebase.database();
-const ref = database.ref();
-
-ref.once("value")
-.then(snapshot => {
-  const data = snapshot.val();
-  console.log("Data from Firebase:", data);
-})
-.catch(error => {
-  console.error("Error fetching data:", error);
+      var childData = childSnapshot.val();
+      console.log(childData)
+    });
 });
