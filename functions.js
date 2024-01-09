@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+import { getDatabase,ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,13 +20,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-var database = getFirestore(app);
-var ref = database.ref('');
-ref.on('value', function(snapshot) {
-    snapshot.forEach(function(childSnapshot) {
-      console.log(childSnapshot)
 
-      var childData = childSnapshot.val();
-      console.log(childData)
-    });
+const db = getDatabase();
+const starCountRef = ref(db);
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  updateStarCount(postElement, data);
 });
