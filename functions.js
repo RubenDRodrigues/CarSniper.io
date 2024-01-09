@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(config);
+const app = initializeApp(firebaseConfig);
 var database = getFirestore(app);
 var ref = database.ref('');
 ref.on('value', function(snapshot) {
