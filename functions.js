@@ -18,8 +18,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(config);
-var database = firebase.database();
+const app = initializeApp(config);
+var database = getFirestore(app);
 var ref = database.ref('');
 ref.on('value', function(snapshot) {
     snapshot.forEach(function(childSnapshot) {
