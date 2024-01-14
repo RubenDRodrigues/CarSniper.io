@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { firebase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { orderByKey,limitToFirst, get,onValue , set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { initializeApp  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -18,35 +18,55 @@ const firebaseConfig = {
   measurementId: "G-9ZP4616YZS"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const resultList = document.getElementById('resultList');
-let lastKey = null;
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
-function loadData(limit) {
-    let query = database.ref('anuncios').orderByKey().limitToFirst(limit);
-    if (lastKey) {
-        query = query.startAt(lastKey);
-    }
-    
-    return query.once('value');
-}
+const itemsRef = database.ref('anuncios');
 
-function loadMore() {
-    loadData(5).then(snapshot => {
-        snapshot.forEach(childSnapshot => {
-            const data = childSnapshot.val();
-            const listItem = document.createElement('li');
-            listItem.textContent = data.yourProperty;
-            resultList.appendChild(listItem);
+// Initial page load (first 10 items)
+let pageSize = 10;
+let lastItemKey = null;
+
+
+function loadPage() {
+  let query = itemsRef.orderByKey();
+
+  if (lastItemKey) {
+    // If lastItemKey is set, start the query after the last item
+    query = query.startAt(lastItemKey).limitToFirst(pageSize + 1);
+  } else {
+    // Initial page load
+    query = query.limitToFirst(pageSize);
+  }
+
+  query.once('value')
+    .then(snapshot => {
+      const items = snapshot.val();
+      const keys = Object.keys(items);
+
+      if (keys.length > 0) {
+        // Remove the extra item used for pagination if it exists
+        if (keys.length > pageSize) {
+          keys.pop();
+        }
+
+        // Update lastItemKey for the next page
+        lastItemKey = keys[keys.length - 1];
+
+        // Process the items as needed
+        keys.forEach(key => {
+          const item = items[key];
+          console.log(item);
         });
-
-        // Update lastKey for the next pagination
-        const lastItem = resultList.lastChild;
-        lastKey = lastItem ? lastItem.getAttribute('name') : null;
+      } else {
+        console.log('No more items');
+      }
+    })
+    .catch(error => {
+      console.error('Error loading page:', error);
     });
 }
 
-        // Load initial data
-        loadMore();
+// Example usage:
+loadPage();
+// You can call loadPage() again to load the next page
