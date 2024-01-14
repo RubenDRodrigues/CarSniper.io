@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase,ref, get,onValue , set, orderByKey ,endAt } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
-import { collection, query, orderBy, startAfter, limit, getDocs } from "firebase/firestore";
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+import { getDatabase, ref, limitToFirst, startAt, on, off } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -18,20 +18,54 @@ const firebaseConfig = {
   measurementId: "G-9ZP4616YZS"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
-const db = getDatabase();
-const starCountRef = ref(db);
+const itemsPerPage = 10;
+let currentPage = 1;
+let unsubscribe;
 
-const q = query(starCountRef, orderByKey(), limit(10));
-const documentSnapshots = await getDocs(q);
-console.log(documentSnapshots)
+function fetchData(page) {
+  const dataList = document.getElementById('data-list');
+  dataList.innerHTML = ''; // Clear previous data
 
+  const startAtKey = page === 1 ? null : page * itemsPerPage;
 
-onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val();
-  console.log(data)
+  const query = ref(database, 'anuncios');
+  const paginatedQuery = startAt(query, startAtKey);
+  const limitedQuery = limitToFirst(paginatedQuery, itemsPerPage);
+
+  unsubscribe = on(limitedQuery, 'value', (snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      const item = childSnapshot.val();
+      const li = document.createElement('li');
+      li.textContent = item.name; // Assuming 'name' is a property in your data
+      dataList.appendChild(li);
+    });
+  });
+}
+
+function initPagination() {
+  const paginationContainer = document.getElementById('pagination-container');
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.addEventListener('click', () => {
+    currentPage++;
+    fetchData(currentPage);
+  });
+  paginationContainer.appendChild(nextBtn);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchData(currentPage);
+  initPagination();
+});
+
+// Optional: Clean up the listener when the page is unloaded
+window.addEventListener('beforeunload', () => {
+  if (unsubscribe) {
+    off(unsubscribe);
+  }
 });
 
 function writeUserData(userId, name, email, imageUrl) {
@@ -44,5 +78,4 @@ function writeUserData(userId, name, email, imageUrl) {
 }
 
 
-
-//writeUserData("userId", "name", "email", "imageUrl")
+writeUserData("userId", "name", "email", "imageUrl")
