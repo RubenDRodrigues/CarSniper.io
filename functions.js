@@ -21,15 +21,15 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-const db = getDatabase();
-const starCountRef = ref(db);
-const recentPostsRef = query(ref(db, 'anuncios'), limitToLast(15));
-console.log(recentPostsRef)
 
-onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val().limitToFirst(10);
-  console.log(data)
-});
+const ref = firebase.database().ref("anuncios")
+
+const query = ref.orderByKey().limitToLast(2);
+
+query.on('value', function(snapshot) {
+  console.log(snapshot)
+})
+
 
 function writeUserData(userId, name, email, imageUrl) {
   const db = getDatabase();
