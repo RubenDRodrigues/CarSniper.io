@@ -19,10 +19,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
+const database = firebase.database();
 const itemsRef = database.ref('anuncios');
-
 // Initial page load (first 10 items)
 let pageSize = 10;
 let lastItemKey = null;
