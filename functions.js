@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase,ref, get,onValue , set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { query, orderBy, startAt } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -28,8 +29,11 @@ onValue(starCountRef, (snapshot) => {
   console.log(data)
 });
 
+const q = query(citiesRef, orderBy("name"), startAt(10));
+const documentSnapshots = await getDocs(q);
+console.log(documentSnapshots)
+
 function writeUserData(userId, name, email, imageUrl) {
-  const db = getDatabase();
   set(ref(db, 'users/' + userId), {
     username: name,
     email: email,
