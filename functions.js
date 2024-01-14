@@ -1,8 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase,ref, get,onValue , set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
-import { collection, query, orderBy, startAfter, limit, getDocs,getFirestore  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
-
+import { orderByKey,limitToFirst, get,onValue , set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -21,21 +19,34 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const resultList = document.getElementById('resultList');
+let lastKey = null;
 
-const db = getFirestore();
+function loadData(limit) {
+    let query = database.ref('anuncios').orderByKey().limitToFirst(limit);
+    if (lastKey) {
+        query = query.startAt(lastKey);
+    }
+    
+    return query.once('value');
+}
 
-// Query the first page of docs
-const first = query(collection(db, "anuncios"), orderBy("name"), limit(25));
-const documentSnapshots = await getDocs(first);
+function loadMore() {
+    loadData(5).then(snapshot => {
+        snapshot.forEach(childSnapshot => {
+            const data = childSnapshot.val();
+            const listItem = document.createElement('li');
+            listItem.textContent = data.yourProperty;
+            resultList.appendChild(listItem);
+        });
 
-// Get the last visible document
-const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length-1];
-console.log("last", lastVisible);
+        // Update lastKey for the next pagination
+        const lastItem = resultList.lastChild;
+        lastKey = lastItem ? lastItem.getAttribute('name') : null;
+    });
+}
 
-// Construct a new query starting at this document,
-// get the next 25 cities.
-const next = query(collection(db, "anuncios"),
-    orderBy("name"),
-    startAfter(lastVisible),
-    limit(25));
+        // Load initial data
+        loadMore();
