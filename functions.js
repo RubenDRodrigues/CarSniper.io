@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase,ref, get,onValue , set,  query, orderBy, endAt } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase,ref, get,onValue , set,  query, orderByKey ,endAt } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const starCountRef = ref(db);
 
-const q = query(citiesRef, orderBy("population"), endAt(1000000));
+const q = query(citiesRef, orderByKey(), endAt(1000000));
 const documentSnapshots = await getDocs(q);
 console.log(documentSnapshots)
 
