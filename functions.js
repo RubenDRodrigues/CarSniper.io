@@ -22,7 +22,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const starCountRef = ref(db).limitToLast(2);
+const starCountRef = ref(db).orderByKey().limitToLast(2);
 
 onValue(starCountRef, (snapshot) => {
   const data = snapshot.val();
