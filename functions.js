@@ -18,39 +18,24 @@ const firebaseConfig = {
   measurementId: "G-9ZP4616YZS"
 };
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-const itemsPerPage = 10;
-let currentPage = 1;
-
-function fetchData(page) {
-  const dataList = document.getElementById('data-list');
-
-  // Start at the index of the last item on the previous page
-  const startAtKey = page === 1 ? null : page * itemsPerPage;
-
-  // Retrieve data from the database
-  database.ref('your_data_path')
-    .orderByKey()
-    .startAt(String(startAtKey))
-    .limitToFirst(itemsPerPage)
-    .once('value')
-    .then(snapshot => {
-      snapshot.forEach(childSnapshot => {
-        const item = childSnapshot.val();
-        const li = document.createElement('li');
-        li.textContent = item.name; // Assuming 'name' is a property in your data
-        dataList.appendChild(li);
-      });
-    });
-}
-
-function loadMore() {
-  currentPage++;
-  fetchData(currentPage);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  fetchData(currentPage);
+const db = getDatabase();
+const starCountRef = ref(db);
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log(data)
 });
+
+function writeUserData(userId, name, email, imageUrl) {
+  const db = getDatabase();
+  set(ref(db, 'users/' + userId), {
+    username: name,
+    email: email,
+    profile_picture : imageUrl
+  });
+}
+
+
+writeUserData("userId", "name", "email", "imageUrl")
