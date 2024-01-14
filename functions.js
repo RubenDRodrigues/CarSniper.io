@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
-import { getDatabase, ref, limitToFirst, startAt } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase,ref, get,onValue , set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -18,64 +18,39 @@ const firebaseConfig = {
   measurementId: "G-9ZP4616YZS"
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
 const itemsPerPage = 10;
 let currentPage = 1;
-let unsubscribe;
 
 function fetchData(page) {
   const dataList = document.getElementById('data-list');
-  dataList.innerHTML = ''; // Clear previous data
 
+  // Start at the index of the last item on the previous page
   const startAtKey = page === 1 ? null : page * itemsPerPage;
 
-  const query = ref(database, 'anuncios');
-  const paginatedQuery = startAt(query, startAtKey);
-  const limitedQuery = limitToFirst(paginatedQuery, itemsPerPage);
-
-  unsubscribe = on(limitedQuery, 'value', (snapshot) => {
-    snapshot.forEach((childSnapshot) => {
-      const item = childSnapshot.val();
-      const li = document.createElement('li');
-      li.textContent = item.name; // Assuming 'name' is a property in your data
-      dataList.appendChild(li);
+  // Retrieve data from the database
+  database.ref('your_data_path')
+    .orderByKey()
+    .startAt(String(startAtKey))
+    .limitToFirst(itemsPerPage)
+    .once('value')
+    .then(snapshot => {
+      snapshot.forEach(childSnapshot => {
+        const item = childSnapshot.val();
+        const li = document.createElement('li');
+        li.textContent = item.name; // Assuming 'name' is a property in your data
+        dataList.appendChild(li);
+      });
     });
-  });
 }
 
-function initPagination() {
-  const paginationContainer = document.getElementById('pagination-container');
-  const nextBtn = document.createElement('button');
-  nextBtn.textContent = 'Next';
-  nextBtn.addEventListener('click', () => {
-    currentPage++;
-    fetchData(currentPage);
-  });
-  paginationContainer.appendChild(nextBtn);
+function loadMore() {
+  currentPage++;
+  fetchData(currentPage);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   fetchData(currentPage);
-  initPagination();
 });
-
-// Optional: Clean up the listener when the page is unloaded
-window.addEventListener('beforeunload', () => {
-  if (unsubscribe) {
-    off(unsubscribe);
-  }
-});
-
-function writeUserData(userId, name, email, imageUrl) {
-  const db = getDatabase();
-  set(ref(db, 'users/' + userId), {
-    username: name,
-    email: email,
-    profile_picture : imageUrl
-  });
-}
-
-
-writeUserData("userId", "name", "email", "imageUrl")

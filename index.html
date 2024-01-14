@@ -1,13 +1,17 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<script src="functions.js" type="module"></script>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firebase Pagination</title>
+  <!-- Include Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
+  <script src="functions.js" defer></script>
 </head>
 <body>
-  <div id="pagination-container"></div>
-  <ul id="data-list"></ul>
+  <div id="data-list"></div>
+  <button onclick="loadMore()">Load More</button>
 </body>
 </html>
