@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const starCountRef = ref(db);
 onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val();
+  const data = snapshot.val().limitToFirst(10);
   console.log(data)
 });
 
@@ -38,4 +38,5 @@ function writeUserData(userId, name, email, imageUrl) {
 }
 
 
-writeUserData("userId", "name", "email", "imageUrl")
+
+//writeUserData("userId", "name", "email", "imageUrl")
