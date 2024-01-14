@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase,ref, get,onValue , set,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
-import { query, startAt } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
+import { getDatabase,ref, get,onValue , set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { query, orderBy, startAt,collection, query, orderBy, startAfter, limit, getDocs  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
+
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -23,23 +24,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const starCountRef = ref(db);
-onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val();
-  console.log(data)
-});
 
-const q = query(starCountRef, orderByKey(), startAt(10));
-const documentSnapshots = await getDocs(q);
-console.log(documentSnapshots)
+// Query the first page of docs
+const first = query(collection(db, "anuncios"), orderBy("name"), limit(25));
+const documentSnapshots = await getDocs(first);
 
-function writeUserData(userId, name, email, imageUrl) {
-  set(ref(db, 'users/' + userId), {
-    username: name,
-    email: email,
-    profile_picture : imageUrl
-  });
-}
+// Get the last visible document
+const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length-1];
+console.log("last", lastVisible);
 
-
-writeUserData("userId", "name", "email", "imageUrl")
+// Construct a new query starting at this document,
+// get the next 25 cities.
+const next = query(collection(db, "anuncios"),
+    orderBy("name"),
+    startAfter(lastVisible),
+    limit(25));
