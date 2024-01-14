@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const starCountRef = ref(db);
 const recentPostsRef = query(ref(db, 'anuncios'), limitToLast(15));
-console.logrecentPostsRef()
+console.log(recentPostsRef)
 
 onValue(starCountRef, (snapshot) => {
   const data = snapshot.val().limitToFirst(10);
