@@ -29,7 +29,7 @@ onValue(starCountRef, (snapshot) => {
   console.log(data)
 });
 
-const q = query(citiesRef, orderBy("name"), startAt(10));
+const q = query(starCountRef, orderBy("name"), startAt(10));
 const documentSnapshots = await getDocs(q);
 console.log(documentSnapshots)
 
