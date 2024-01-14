@@ -22,9 +22,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 
-const ref = firebase.database().ref("anuncios")
+const ref_db = firebase.database().ref("anuncios")
 
-const query = ref.orderByKey().limitToLast(2);
+const query = ref_db.orderByKey().limitToLast(2);
 
 query.on('value', function(snapshot) {
   console.log(snapshot)
