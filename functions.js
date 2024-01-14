@@ -22,10 +22,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const starCountRef = ref(db);
-onValue(starCountRef, (snapshot) => {
-  const data = snapshot.val().limitToFirst(10);
-  console.log(data)
+const scoresRef = db.ref('anuncios');
+scoresRef.orderByValue().limitToLast(3).on('value', (snapshot)  =>{
+  snapshot.forEach((data) => {
+    console.log(data);
+  });
 });
 
 function writeUserData(userId, name, email, imageUrl) {
