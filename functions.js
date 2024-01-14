@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase();
 const starCountRef = ref(db);
 
-const q = query(citiesRef, orderByKey(), endAt(1000000));
+const q = query(starCountRef, orderByKey(), endAt(10));
 const documentSnapshots = await getDocs(q);
 console.log(documentSnapshots)
 
