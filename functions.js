@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase,ref, get,onValue , set,query, limitToLast  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase,ref, get,onValue , set, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -21,15 +21,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+const db = getDatabase();
+const starCountRef = ref(db).limitToLast(2);
 
-const ref_db = app.database().ref("anuncios")
-
-const query_limit_2 = ref_db.orderByKey().limitToLast(2);
-
-query_limit_2.on('value', function(snapshot) {
-  console.log(snapshot)
-})
-
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log(data)
+});
 
 function writeUserData(userId, name, email, imageUrl) {
   const db = getDatabase();
