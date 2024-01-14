@@ -23,7 +23,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-const db = getDatabase();
+const db = getFirestore();
 
 // Query the first page of docs
 const first = query(collection(db, "anuncios"), orderBy("name"), limit(25));
