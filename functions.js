@@ -24,9 +24,9 @@ const app = initializeApp(firebaseConfig);
 
 const ref_db = firebase.database().ref("anuncios")
 
-const query = ref_db.orderByKey().limitToLast(2);
+const query_limit_2 = ref_db.orderByKey().limitToLast(2);
 
-query.on('value', function(snapshot) {
+query_limit_2.on('value', function(snapshot) {
   console.log(snapshot)
 })
 
