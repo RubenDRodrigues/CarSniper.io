@@ -22,7 +22,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 
-const ref_db = firebase.database().ref("anuncios")
+const ref_db = app.database().ref("anuncios")
 
 const query_limit_2 = ref_db.orderByKey().limitToLast(2);
 
