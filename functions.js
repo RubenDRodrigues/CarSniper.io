@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { collection, query, orderBy, startAfter, limit, getDocs,getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
-
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -26,7 +26,8 @@ const app = initializeApp(firebaseConfig);
 // Initialize Cloud Firestore and get a reference to the service
 //const db = getFirestore(app);
 
-const db = firebase.database();
+const db =  getDatabase(app);
+
 const itemsRef = database.ref('anuncios');
 
 
