@@ -21,5 +21,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const recentPostsRef = query(ref(db, "anuncios"), limitToLast(10));
+const recentPostsRef = query(ref(db, "anuncios"));
+
+
+
+
 console.log(recentPostsRef)
