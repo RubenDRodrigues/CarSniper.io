@@ -24,5 +24,16 @@ const app = initializeApp(firebaseConfig);
 
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const topUserPostsRef = query(ref(db, 'anuncios/'),startAt(3));
+const topUserPostsRef = query(ref(db, 'anuncios'),startAt(3));
 console.log(topUserPostsRef)
+
+onValue(topUserPostsRef, (snapshot) => {
+  snapshot.forEach((childSnapshot) => {
+    const childKey = childSnapshot.key;
+    const childData = childSnapshot.val();
+    console.log(childData)
+    console.log(childKey)
+  });
+}, {
+  onlyOnce: true
+});
