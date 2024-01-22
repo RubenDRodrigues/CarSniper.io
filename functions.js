@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, orderByChild, ref, limitToLast,limitToFirst,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -21,13 +21,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+
+// Create a new post reference with an auto-generated id
 const db = getDatabase();
-
-const q = query(collection(db, "anuncios"));//, where("capital", "==", true)
-
-
-const querySnapshot = await getDocs(q);
-querySnapshot.forEach((doc) => {
-  // doc.data() is never undefined for query doc snapshots
-  console.log(doc.id, " => ", doc.data());
-});
+const topUserPostsRef = query(ref(db, 'anuncios/'),startAt(3));
+console.log(topUserPostsRef)
