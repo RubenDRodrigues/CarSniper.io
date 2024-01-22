@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
 
-var carRef = db.ref("anuncios");
+const carRef = ref(db, 'anuncios');
 
 carRef.orderByKey().once('value').then(function(snapshot){
   snapshot.forEach(childSnapshot => { 
