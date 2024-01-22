@@ -43,7 +43,7 @@ onValue(topUserPostsRef, (snapshot) => {
   onlyOnce: true
 });
 
-function createCarAd(link_image,text){
+function createCarAd(link_image,text,link){
 
   const section = document.getElementById("pageSection");
   const mainDiv = document.createElement("div");
@@ -60,7 +60,8 @@ function createCarAd(link_image,text){
   mainDiv.appendChild(image)
 
   const button = document.createElement("button");
-  button.setAttribute('content', 'Ver anuncio');
+  button.appendChild(document.createTextNode('test value'))
+  
   button.onclick = function () {
     location.href = link;
   };
