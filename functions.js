@@ -32,9 +32,28 @@ onValue(topUserPostsRef, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
-    console.log(childData)
-    console.log(childKey)
+    console.log(childData["link"])
+    link=childData["link_images"]
+    text=childData["name"]
+    createCarAd(link,text)
+    
   });
 }, {
   onlyOnce: true
 });
+
+function createCarAd(link,text){
+
+  const section = document.getElementById("pageSection");
+  const mainDiv = document.createElement("div");
+  section.appendChild(mainDiv)
+  const image = document.createElement("img");
+  image.src = link;
+  mainDiv.appendChild(image)
+
+  const Title = document.createElement("h2");
+  const node = document.createTextNode(text);
+  Title.appendChild(node);
+  mainDiv.appendChild(Title);
+
+}
