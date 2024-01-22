@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, query, limitToLast,limitToFirst  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase, ref, query, limitToLast,limitToFirst,orderByKey  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -24,19 +24,16 @@ const db = getDatabase();
 const recentPostsRef = ref(db, "anuncios")
 
 
-// Read only the first 10 items
-recentPostsRef.limitToFirst(10).once('name')
+recentPostsRef.orderByKey().limitToFirst(10).once('value')
   .then(snapshot => {
     // Handle the snapshot (contains the first 10 items)
     snapshot.forEach(childSnapshot => {
       const key = childSnapshot.key;
       const data = childSnapshot.val();
-      console.log(data);
+      console.log(`Key: ${key}, Data: ${JSON.stringify(data)}`);
     });
   })
   .catch(error => {
     // Handle errors
     console.error('Error reading data:', error);
   });
-
-console.log(recentPostsRef)
