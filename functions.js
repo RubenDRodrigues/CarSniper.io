@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { get,getDatabase, ref, query,limitToLast,limitToFirst,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { get,getDatabase,  query,limitToLast,limitToFirst,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
 
-var ref = db.ref("anuncios");
-var getPromise = ref.once("name", function(snapshot) {
+var lolref = db.ref("anuncios");
+var getPromise = lolref.once("name", function(snapshot) {
   console.log(snapshot.val());
 });
