@@ -21,9 +21,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const recentPostsRef = query(ref(db, "anuncios"));
+const recentPostsRef = ref(db, "anuncios")
 
 
-
+// Read only the first 10 items
+recentPostsRef.limitToFirst(10).once('name')
+  .then(snapshot => {
+    // Handle the snapshot (contains the first 10 items)
+    snapshot.forEach(childSnapshot => {
+      const key = childSnapshot.key;
+      const data = childSnapshot.val();
+      console.log(data);
+    });
+  })
+  .catch(error => {
+    // Handle errors
+    console.error('Error reading data:', error);
+  });
 
 console.log(recentPostsRef)
