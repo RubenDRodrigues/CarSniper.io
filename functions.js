@@ -21,19 +21,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const recentPostsRef = ref(db, "anuncios")
 
-
-recentPostsRef.orderByKey().limitToFirst(10).once('name')
-  .then(snapshot => {
-    // Handle the snapshot (contains the first 10 items)
-    snapshot.forEach(childSnapshot => {
-      const key = childSnapshot.key;
-      const data = childSnapshot.val();
-      console.log(`Key: ${key}, Data: ${JSON.stringify(data)}`);
-    });
-  })
-  .catch(error => {
-    // Handle errors
-    console.error('Error reading data:', error);
-  });
+get(query(ref(db, 'anuncios'), orderByKey(), limitToFirst(1)));
