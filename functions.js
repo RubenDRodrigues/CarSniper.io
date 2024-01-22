@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey,startAt } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey,startAt,onValue  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // TODO: Add SDKs for Firebase products that you want to use
