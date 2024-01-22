@@ -22,4 +22,11 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
 
-const topUserPostsRef = query(ref(db, 'anuncios/' ), orderByChild('name'));
+const topUserPostsRef = query(ref(db, 'anuncios/' ), orderByChild('name'))
+
+
+const querySnapshot = await getDocs(topUserPostsRef);
+querySnapshot.forEach((doc) => {
+  // doc.data() is never undefined for query doc snapshots
+  console.log(doc.id, " => ", doc.data());
+});
