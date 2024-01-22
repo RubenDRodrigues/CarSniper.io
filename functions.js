@@ -25,14 +25,13 @@ const currentPage = 1
 
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const topUserPostsRef = query(ref(db, 'anuncios'),startAt(10*(currentPage-1)), limit(10)  );
+const topUserPostsRef = query(ref(db, 'anuncios'),startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
 console.log(topUserPostsRef)
 
 onValue(topUserPostsRef, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
-    console.log(childData["link"])
     const link_image=childData["link_images"]
     const text=childData["name"]
     const link=childData["link"]
