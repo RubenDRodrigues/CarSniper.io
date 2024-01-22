@@ -22,5 +22,7 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
 
-const result=get(query(ref(db, 'anuncios'), orderByKey(), limitToFirst(1)));
-console.log(result)
+var ref = db.ref("anuncios");
+var getPromise = ref.once("name", function(snapshot) {
+  console.log(snapshot.val());
+});
