@@ -28,7 +28,7 @@ const app = initializeApp(firebaseConfig);
 
 const db =  getDatabase(app);
 
-const itemsRef = database.ref('anuncios');
+const itemsRef = db.ref('anuncios');
 
 
 // Query the first page of docs
