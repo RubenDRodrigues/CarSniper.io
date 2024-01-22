@@ -59,7 +59,7 @@ function createCarAd(link_image,text,link){
   mainDiv.appendChild(image)
 
   const button = document.createElement("button");
-  button.appendChild(document.createTextNode('test value'))
+  button.appendChild(document.createTextNode('link para anuncio'))
   
   button.onclick = function () {
     location.href = link;
