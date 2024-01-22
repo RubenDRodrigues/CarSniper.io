@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { collection, query, orderBy, startAfter, limit, getDocs,getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, query, limitToLast  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -18,30 +18,7 @@ const firebaseConfig = {
   measurementId: "G-9ZP4616YZS"
 };
 
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-
-// Initialize Cloud Firestore and get a reference to the service
-//const db = getFirestore(app);
-
-const db =  getDatabase(app);
-
-const itemsRef = db.ref('anuncios');
-
-
-// Query the first page of docs
-const first = query(collection(db, "anuncios"), orderBy("name"), limit(25));
-const documentSnapshots = await getDocs(first);
-
-// Get the last visible document
-const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length-1];
-console.log("last", lastVisible);
-
-// Construct a new query starting at this document,
-// get the next 25 cities.
-const next = query(collection(db, "anuncios"),
-    orderBy("name"),
-    startAfter(lastVisible),
-    limit(25));
+const db = getDatabase();
+const recentPostsRef = query(ref(db, "anuncios"), limitToLast(10));
