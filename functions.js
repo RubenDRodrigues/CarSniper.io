@@ -45,7 +45,8 @@ onValue(topUserPostsRef, (snapshot) => {
 function createCarAd(link,text){
 
   const section = document.getElementById("pageSection");
-  const mainDiv = document.createElement("div").classList.add("product");
+  const mainDiv = document.createElement("div");
+  mainDiv.classList.add("product")
   section.appendChild(mainDiv)
 
   const Title = document.createElement("h2");
