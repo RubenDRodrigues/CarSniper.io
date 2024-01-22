@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { get,getDatabase, ref, query,limitToLast,limitToFirst,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase, orderByChild, ref, query,limitToLast,limitToFirst,orderByKey } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -22,12 +22,4 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
 
-const carRef = ref(db, 'anuncios');
-
-carRef.orderByKey().once('value').then(function(snapshot){
-  snapshot.forEach(childSnapshot => { 
-
-  let snapdb = childSnapshot.val()
-  console.log(snapdb);
-
-  })})
+const topUserPostsRef = query(ref(db, 'anuncios/' ), orderByChild('name'));
