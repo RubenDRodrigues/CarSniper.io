@@ -33,8 +33,8 @@ onValue(topUserPostsRef, (snapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
     console.log(childData["link"])
-    link=childData["link_images"]
-    text=childData["name"]
+    const link=childData["link_images"]
+    const text=childData["name"]
     createCarAd(link,text)
     
   });
