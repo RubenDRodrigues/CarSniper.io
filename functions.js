@@ -33,16 +33,17 @@ onValue(topUserPostsRef, (snapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
     console.log(childData["link"])
-    const link=childData["link_images"]
+    const link_image=childData["link_images"]
     const text=childData["name"]
-    createCarAd(link,text)
+    const link=childData["link"]
+    createCarAd(link_image,text,link)
     
   });
 }, {
   onlyOnce: true
 });
 
-function createCarAd(link,text){
+function createCarAd(link_image,text){
 
   const section = document.getElementById("pageSection");
   const mainDiv = document.createElement("div");
@@ -55,8 +56,15 @@ function createCarAd(link,text){
   mainDiv.appendChild(Title);
 
   const image = document.createElement("img");
-  image.src = link;
+  image.src = link_image;
   mainDiv.appendChild(image)
+
+  const button = document.createElement("button");
+  button.setAttribute('content', 'Ver anuncio');
+  button.onclick = function () {
+    location.href = link;
+  };
+  mainDiv.appendChild(button)
 
 
 
