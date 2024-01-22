@@ -20,11 +20,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
+const itemsPerPage = 10
+const currentPage = 1
 
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const topUserPostsRef = query(ref(db, 'anuncios'),startAt(3));
+const topUserPostsRef = query(ref(db, 'anuncios'),startAt(10*(currentPage-1)));
 console.log(topUserPostsRef)
 
 onValue(topUserPostsRef, (snapshot) => {
