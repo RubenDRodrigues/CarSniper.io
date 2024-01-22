@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { collection, query, orderBy, startAfter, limit, getDocs,getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";  
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -18,53 +18,26 @@ const firebaseConfig = {
   measurementId: "G-9ZP4616YZS"
 };
 
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = firebase.database();
-const itemsRef = database.ref('anuncios');
-// Initial page load (first 10 items)
-let pageSize = 10;
-let lastItemKey = null;
 
 
-function loadPage() {
-  let query = itemsRef.orderByKey();
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
 
-  if (lastItemKey) {
-    // If lastItemKey is set, start the query after the last item
-    query = query.startAt(lastItemKey).limitToFirst(pageSize + 1);
-  } else {
-    // Initial page load
-    query = query.limitToFirst(pageSize);
-  }
 
-  query.once('value')
-    .then(snapshot => {
-      const items = snapshot.val();
-      const keys = Object.keys(items);
+// Query the first page of docs
+const first = query(collection(db, "anuncios"), orderBy("name"), limit(25));
+const documentSnapshots = await getDocs(first);
 
-      if (keys.length > 0) {
-        // Remove the extra item used for pagination if it exists
-        if (keys.length > pageSize) {
-          keys.pop();
-        }
+// Get the last visible document
+const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length-1];
+console.log("last", lastVisible);
 
-        // Update lastItemKey for the next page
-        lastItemKey = keys[keys.length - 1];
-
-        // Process the items as needed
-        keys.forEach(key => {
-          const item = items[key];
-          console.log(item);
-        });
-      } else {
-        console.log('No more items');
-      }
-    })
-    .catch(error => {
-      console.error('Error loading page:', error);
-    });
-}
-
-// Example usage:
-loadPage();
-// You can call loadPage() again to load the next page
+// Construct a new query starting at this document,
+// get the next 25 cities.
+const next = query(collection(db, "anuncios"),
+    orderBy("name"),
+    startAfter(lastVisible),
+    limit(25));
