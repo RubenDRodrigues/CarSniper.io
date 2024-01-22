@@ -22,4 +22,5 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase();
 
-get(query(ref(db, 'anuncios'), orderByKey(), limitToFirst(1)));
+const result=get(query(ref(db, 'anuncios'), orderByKey(), limitToFirst(1)));
+console.log(result)
