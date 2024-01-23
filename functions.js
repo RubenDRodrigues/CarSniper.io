@@ -48,6 +48,9 @@ onValue(topUserPostsRef, (snapshot) => {
 
 function searchQuery(){
   // Create a new post reference with an auto-generated id
+  const elements = document.getElementsByClassName("container");
+  while (elements.length > 0) elements[0].remove();
+
   const queryName = document.getElementById("searchBarId").value
   const newQueryRef =query(ref(db, 'anuncios'),orderByChild("name"),startAt(queryName) ,endAt(queryName+"\uf8ff"));
   console.log(newQueryRef)
