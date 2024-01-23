@@ -86,13 +86,9 @@ function createCarAd(link_image,text,link){
   property_1_value.appendChild(property_1_value_text);
   container__text__timing_1.appendChild(property_1_value);
 
-  const container__text__timing_2 = document.createElement("div");
-  container__text__timing_2.classList.add("container__text__timing_time")
-  container__text__timing.appendChild(container__text__timing_2);
+  create_ad_property(container__text__timing,"kilometro","300K")
+  create_ad_property(container__text__timing,"not","sim")
 
-  const container__text__timing_3 = document.createElement("div");
-  container__text__timing_3.classList.add("container__text__timing_time")
-  container__text__timing.appendChild(container__text__timing_3);
 
   const button = document.createElement("button");
   button.appendChild(document.createTextNode('link para anuncio'))
@@ -104,4 +100,22 @@ function createCarAd(link_image,text,link){
 
 
 
+}
+
+function create_ad_property(parent_div,category,price){
+
+  const container__text__timing_1 = document.createElement("div");
+  container__text__timing_1.classList.add("container__text__timing_time")
+  parent_div.appendChild(container__text__timing_1);
+
+  const property_1 = document.createElement("h2");
+  const property_1_text = document.createTextNode(category);
+  property_1.appendChild(property_1_text);
+  container__text__timing_1.appendChild(property_1);
+
+
+  const property_1_value = document.createElement("p");
+  const property_1_value_text = document.createTextNode(price);
+  property_1_value.appendChild(property_1_value_text);
+  container__text__timing_1.appendChild(property_1_value);
 }
