@@ -17,7 +17,7 @@
 	 grid-template-columns: 300px 400px;
 	 border-radius: 5px;
 	 box-shadow: 0 15px 20px rgba(0, 0, 0, 0.356);
-     margin-top: 100px;
+     margin-bottom: 50px;
 
 }
  .container img {
@@ -47,7 +47,9 @@
 	 font-size: 1.5rem;
 }
  .container__text {
-	 padding: 10px 30px 0;
+    margin-left: -100px;
+
+	padding: 10px 30px 0;
 }
  .container__text h1 {
 	 color: #351897;
@@ -93,7 +95,7 @@
   border: 3px solid #00B4CC;
   border-right: none;
   padding: 5px;
-  height: 20px;
+  height: 40px;
   border-radius: 5px 0 0 5px;
   outline: none;
   color: #9DBFAF;
@@ -105,7 +107,7 @@
 
 .searchButton {
   width: 40px;
-  height: 36px;
+  height: 40px;
   border: 1px solid #00B4CC;
   background: #00B4CC;
   text-align: center;
@@ -116,8 +118,13 @@
 }
 
 .wrap{
+  width: 50%;
   position: relative;
+  top: 40px;
   transform: translate(-50%, -50%);
+  margin-bottom: 30px;
+  align-items: center;
+  margin-left: 50%;
 }
 
 /*SEARCH BAR*/

@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey,startAt,onValue  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey,startAt,onValue ,endAt,orderByValue,equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -23,9 +23,13 @@ const app = initializeApp(firebaseConfig);
 const itemsPerPage = 10
 const currentPage = 1
 
+document.getElementById("submitId").onclick = searchQuery;
+
+
+
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const topUserPostsRef = query(ref(db, 'anuncios'),startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
+const topUserPostsRef = query(ref(db, 'anuncios'), startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
 console.log(topUserPostsRef)
 
 onValue(topUserPostsRef, (snapshot) => {
@@ -41,6 +45,29 @@ onValue(topUserPostsRef, (snapshot) => {
 }, {
   onlyOnce: true
 });
+
+function searchQuery(){
+  // Create a new post reference with an auto-generated id
+  const queryText = "Audi"
+  const queryName = document.getElementById("searchBarId")
+  const newQueryRef =query(ref(db, 'anuncios'),orderByChild('name') );
+  console.log(newQueryRef)
+
+  onValue(newQueryRef, (snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      const childKey = childSnapshot.key;
+      const childData = childSnapshot.val();
+      const link_image=childData["link_images"]
+      const text=childData["name"]
+      const link=childData["link"]
+      console.log(text)
+      createCarAd(link_image,text,link)
+      
+    });
+  });
+
+}
+
 
 function createCarAd(link_image,text,link){
 
@@ -66,22 +93,16 @@ function createCarAd(link_image,text,link){
   const desc_text = document.createTextNode("This is a very good car");
   item_desc.appendChild(desc_text);
   container__text.appendChild(item_desc);
-
  
   const container__text__timing = document.createElement("div");
   container__text__timing.classList.add("container__text__timing")
   container__text.appendChild(container__text__timing);
 
-
   create_ad_property(container__text__timing,"preco","8000$")
   create_ad_property(container__text__timing,"kilometro","300K")
   create_ad_property(container__text__timing,"not","sim")
 
-
-  create_button(mainDiv)
-
-
-
+  create_button(mainDiv,link)
 }
 
 function create_ad_property(parent_div,category,price){
@@ -95,14 +116,13 @@ function create_ad_property(parent_div,category,price){
   property_1.appendChild(property_1_text);
   container__text__timing_1.appendChild(property_1);
 
-
   const property_1_value = document.createElement("p");
   const property_1_value_text = document.createTextNode(price);
   property_1_value.appendChild(property_1_value_text);
   container__text__timing_1.appendChild(property_1_value);
 }
 
-function create_button(parent_div){
+function create_button(parent_div,link){
   const button = document.createElement("button");
   button.classList.add("btn")
   button.appendChild(document.createTextNode('Ver anuncio'))
@@ -114,3 +134,5 @@ function create_button(parent_div){
   button.appendChild(button_arrow)
   parent_div.appendChild(button)
 }
+
+
