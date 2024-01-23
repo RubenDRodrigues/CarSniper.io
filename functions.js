@@ -78,7 +78,7 @@ function createCarAd(link_image,text,link){
   create_ad_property(container__text__timing,"not","sim")
 
 
-  create_button()
+  create_button(mainDiv)
 
 
 
