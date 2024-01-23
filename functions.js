@@ -46,17 +46,53 @@ function createCarAd(link_image,text,link){
 
   const section = document.getElementById("pageSection");
   const mainDiv = document.createElement("div");
-  mainDiv.classList.add("product")
+  mainDiv.classList.add("container")
   section.appendChild(mainDiv)
-
-  const Title = document.createElement("h2");
-  const node = document.createTextNode(text);
-  Title.appendChild(node);
-  mainDiv.appendChild(Title);
 
   const image = document.createElement("img");
   image.src = link_image;
   mainDiv.appendChild(image)
+
+  const container__text = document.createElement("div");
+  container__text.classList.add("container__text")
+  mainDiv.appendChild(container__text)
+
+  const Title = document.createElement("h1");
+  const node = document.createTextNode(text);
+  Title.appendChild(node);
+  container__text.appendChild(Title);
+
+  const item_desc = document.createElement("p");
+  const desc_text = document.createTextNode("This is a very good car");
+  item_desc.appendChild(desc_text);
+  container__text.appendChild(item_desc);
+
+ 
+  const container__text__timing = document.createElement("div");
+  container__text__timing.classList.add("container__text__timing")
+  container__text.appendChild(container__text__timing);
+
+  const container__text__timing_1 = document.createElement("div");
+  container__text__timing_1.classList.add("container__text__timing_time")
+  container__text__timing.appendChild(container__text__timing_1);
+
+  const property_1 = document.createElement("h2");
+  const property_1_text = document.createTextNode("preco");
+  property_1.appendChild(property_1_text);
+  container__text__timing_1.appendChild(property_1);
+
+  const property_1_value = document.createElement("p");
+  const property_1_value_text = document.createTextNode("9000");
+  property_1_value.appendChild(property_1_value_text);
+  container__text__timing_1.appendChild(property_1_value);
+
+  const container__text__timing_2 = document.createElement("div");
+  container__text__timing_2.classList.add("container__text__timing_time")
+  container__text__timing.appendChild(container__text__timing_2);
+
+  const container__text__timing_3 = document.createElement("div");
+  container__text__timing_3.classList.add("container__text__timing_time")
+  container__text__timing.appendChild(container__text__timing_3);
 
   const button = document.createElement("button");
   button.appendChild(document.createTextNode('link para anuncio'))
