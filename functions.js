@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey,startAt,onValue ,endAt,orderByValue,equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getDatabase, set,orderByChild, ref, limitToLast,limitToFirst,orderByKey,startAt,onValue ,endAt,orderByValue,equalTo,query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -29,7 +29,7 @@ document.getElementById("submitId").onclick = searchQuery;
 
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const topUserPostsRef = query(ref(db, 'anuncios'), startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
+const topUserPostsRef = query(ref(db, 'anuncios'),orderByValue() ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
 console.log(topUserPostsRef)
 
 onValue(topUserPostsRef, (snapshot) => {
@@ -48,9 +48,8 @@ onValue(topUserPostsRef, (snapshot) => {
 
 function searchQuery(){
   // Create a new post reference with an auto-generated id
-  const queryText = "Audi"
-  const queryName = document.getElementById("searchBarId")
-  const newQueryRef =query(ref(db, 'anuncios'),orderByChild('name') );
+  const queryName = document.getElementById("searchBarId").value
+  const newQueryRef =query(ref(db, 'anuncios'),orderByChild("name"),startAt(queryName) ,endAt(queryName+"\uf8ff"));
   console.log(newQueryRef)
 
   onValue(newQueryRef, (snapshot) => {
@@ -60,7 +59,6 @@ function searchQuery(){
       const link_image=childData["link_images"]
       const text=childData["name"]
       const link=childData["link"]
-      console.log(text)
       createCarAd(link_image,text,link)
       
     });
