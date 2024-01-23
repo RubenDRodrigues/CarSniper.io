@@ -72,31 +72,13 @@ function createCarAd(link_image,text,link){
   container__text__timing.classList.add("container__text__timing")
   container__text.appendChild(container__text__timing);
 
-  const container__text__timing_1 = document.createElement("div");
-  container__text__timing_1.classList.add("container__text__timing_time")
-  container__text__timing.appendChild(container__text__timing_1);
 
-  const property_1 = document.createElement("h2");
-  const property_1_text = document.createTextNode("preco");
-  property_1.appendChild(property_1_text);
-  container__text__timing_1.appendChild(property_1);
-
-  const property_1_value = document.createElement("p");
-  const property_1_value_text = document.createTextNode("9000");
-  property_1_value.appendChild(property_1_value_text);
-  container__text__timing_1.appendChild(property_1_value);
-
+  create_ad_property(container__text__timing,"preco","8000$")
   create_ad_property(container__text__timing,"kilometro","300K")
   create_ad_property(container__text__timing,"not","sim")
 
 
-  const button = document.createElement("button");
-  button.appendChild(document.createTextNode('link para anuncio'))
-  
-  button.onclick = function () {
-    location.href = link;
-  };
-  mainDiv.appendChild(button)
+  create_button()
 
 
 
@@ -118,4 +100,17 @@ function create_ad_property(parent_div,category,price){
   const property_1_value_text = document.createTextNode(price);
   property_1_value.appendChild(property_1_value_text);
   container__text__timing_1.appendChild(property_1_value);
+}
+
+function create_button(parent_div){
+  const button = document.createElement("button");
+  button.classList.add("btn")
+  button.appendChild(document.createTextNode('Ver anuncio'))
+  button.onclick = function () {
+    location.href = link;
+  };
+  const button_arrow = document.createElement("i");
+  button_arrow.classList.add("fa fa-arrow-right")
+  button.appendChild(button_arrow)
+  parent_div.appendChild(button)
 }
