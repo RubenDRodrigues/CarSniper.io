@@ -110,7 +110,7 @@ function create_button(parent_div){
     location.href = link;
   };
   const button_arrow = document.createElement("i");
-  button_arrow.classList.add("fa fa-arrow-right")
+  button_arrow.classList.add("fa", "fa-arrow-right")
   button.appendChild(button_arrow)
   parent_div.appendChild(button)
 }
