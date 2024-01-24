@@ -52,7 +52,7 @@ function searchQuery(){
   while (elements.length > 0) elements[0].remove();
 
   const queryName = document.getElementById("searchBarId").value
-  const newQueryRef =query(ref(db, 'anuncios'),orderByChild("name"),startAt(queryName) ,endAt(queryName+"\uf8ff"));
+  const newQueryRef =query(ref(db, 'anuncios')) //,orderByChild("name"),startAt(queryName) ,endAt(queryName+"\uf8ff"));
   console.log(newQueryRef)
 
   onValue(newQueryRef, (snapshot) => {
@@ -62,7 +62,15 @@ function searchQuery(){
       const link_image=childData["link_images"]
       const text=childData["name"]
       const link=childData["link"]
-      createCarAd(link_image,text,link)
+      console.log(text)
+      console.log(queryName)
+      console.log(text.includes(queryName))
+
+
+      if ((text.toUpperCase().includes(queryName.toUpperCase()))){
+        createCarAd(link_image,text,link)
+
+      }
       
     });
   });
