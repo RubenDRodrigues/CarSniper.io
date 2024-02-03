@@ -36,10 +36,12 @@ onValue(topUserPostsRef, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
-    const link_image=childData["link_images"]
-    const text=childData["name"]
-    const link=childData["link"]
-    createCarAd(link_image,text,link)
+
+
+    console.log(childData)
+
+
+    createCarAd(childData)
     
   });
 }, {
@@ -78,7 +80,26 @@ function searchQuery(){
 }
 
 
-function createCarAd(link_image,text,link){
+function createCarAd(childData){
+
+
+  const link_image=childData["link_images"]
+  const text=childData["name"]
+  const link=childData["link"]
+  const price=childData["preco"]
+  const quilometer=childData["quilometros"]
+  const location=childData["localizacao"]
+
+
+  try {
+    const specs =childData["Carateristicas"]
+
+    const words = specs[0].split('\n');
+    
+  } catch (e) {
+  }
+
+  
 
   const section = document.getElementById("pageSection");
   const mainDiv = document.createElement("div");
@@ -107,11 +128,13 @@ function createCarAd(link_image,text,link){
   container__text__timing.classList.add("container__text__timing")
   container__text.appendChild(container__text__timing);
 
-  create_ad_property(container__text__timing,"preco","8000$")
-  create_ad_property(container__text__timing,"kilometro","300K")
-  create_ad_property(container__text__timing,"not","sim")
+  create_ad_property(container__text__timing,"Preço:",price)
+  create_ad_property(container__text__timing,"Quilómetros:",quilometer)
+  create_ad_property(container__text__timing,"Localização",location)
 
   create_button(mainDiv,link)
+  
+
 }
 
 function create_ad_property(parent_div,category,price){
