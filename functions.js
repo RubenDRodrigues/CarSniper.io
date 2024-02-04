@@ -20,27 +20,21 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const itemsPerPage = 10
-const currentPage = 1
+var itemsPerPage = 10
+var currentPage = 1
+
 
 document.getElementById("submitId").onclick = searchQuery;
 
-
-
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const topUserPostsRef = query(ref(db, 'anuncios'),orderByValue() ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
-console.log(topUserPostsRef)
+const firstQuery = query(ref(db, 'anuncios'),orderByValue() ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
 
-onValue(topUserPostsRef, (snapshot) => {
+onValue(firstQuery, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
-
-
     console.log(childData)
-
-
     createCarAd(childData)
     
   });
@@ -79,6 +73,34 @@ function searchQuery(){
 
 }
 
+function goToPage(page){
+   currentPage = page
+   var nextQuery = query(ref(db, 'anuncios'),orderByValue() ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
+
+   console.log(nextQuery)
+ 
+   onValue(nextQuery, (snapshot) => {
+     snapshot.forEach((childSnapshot) => {
+       const childKey = childSnapshot.key;
+       const childData = childSnapshot.val();
+       const link_image=childData["link_images"]
+       const text=childData["name"]
+       const link=childData["link"]
+       console.log(text)
+       console.log(queryName)
+       console.log(text.includes(queryName))
+ 
+ 
+       if ((text.toUpperCase().includes(queryName.toUpperCase()))){
+         createCarAd(link_image,text,link)
+ 
+       }
+       
+     });
+   });
+ 
+}
+
 
 function createCarAd(childData){
 
@@ -91,13 +113,7 @@ function createCarAd(childData){
   const location=childData["localizacao"]
 
 
-  try {
-    const specs =childData["Carateristicas"]
 
-    const words = specs[0].split('\n');
-    
-  } catch (e) {
-  }
 
   
 
@@ -119,10 +135,25 @@ function createCarAd(childData){
   Title.appendChild(node);
   container__text.appendChild(Title);
 
-  const item_desc = document.createElement("p");
-  const desc_text = document.createTextNode("This is a very good car");
-  item_desc.appendChild(desc_text);
-  container__text.appendChild(item_desc);
+  try {
+    const specs =childData["Carateristicas"]
+    const words = specs[0].split('\n');
+
+    for (let i = 0; i < words.length; i++){
+      var descriptionWord = words[i] ;
+
+      const descriptionButton = document.createElement("button");
+      descriptionButton.classList.add("button_description")
+      descriptionButton.appendChild(document.createTextNode(descriptionWord))
+      container__text.appendChild(descriptionButton)
+
+    }
+    
+  } catch (e) {
+  }
+  
+
+
  
   const container__text__timing = document.createElement("div");
   container__text__timing.classList.add("container__text__timing")
@@ -133,7 +164,7 @@ function createCarAd(childData){
   create_ad_property(container__text__timing,"Localização",location)
 
   create_button(mainDiv,link)
-  
+
 
 }
 
