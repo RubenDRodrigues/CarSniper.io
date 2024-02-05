@@ -22,9 +22,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 var itemsPerPage = 10
 var currentPage = 1
+var lastKnownKey = null;
 
-
+document.getElementById("btn_seeMore").onclick = seeMoreAds;
 document.getElementById("submitId").onclick = searchQuery;
+
+
+window.onscroll = function() {
+  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+    seeMoreAds()
+  }
+ }
 
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
@@ -36,6 +44,7 @@ onValue(firstQuery, (snapshot) => {
     const childData = childSnapshot.val();
     console.log(childData)
     createCarAd(childData)
+    lastKnownKey = childSnapshot.key;
     
   });
 }, {
@@ -61,10 +70,11 @@ function searchQuery(){
       console.log(text)
       console.log(queryName)
       console.log(text.includes(queryName))
+      lastKnownKey = childSnapshot.key;
 
 
       if ((text.toUpperCase().includes(queryName.toUpperCase()))){
-        createCarAd(link_image,text,link)
+        createCarAd(childData)
 
       }
       
@@ -73,28 +83,31 @@ function searchQuery(){
 
 }
 
-function goToPage(page){
-   currentPage = page
-   var nextQuery = query(ref(db, 'anuncios'),orderByValue() ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
-
+function seeMoreAds(){
+   currentPage++
+   console.log(currentPage)
+   var nextQuery = query(ref(db, 'anuncios'),orderByKey() ,startAt(lastKnownKey), limitToFirst(itemsPerPage)  );
+   var firstCheck = 0
    console.log(nextQuery)
  
    onValue(nextQuery, (snapshot) => {
      snapshot.forEach((childSnapshot) => {
-       const childKey = childSnapshot.key;
-       const childData = childSnapshot.val();
-       const link_image=childData["link_images"]
-       const text=childData["name"]
-       const link=childData["link"]
-       console.log(text)
-       console.log(queryName)
-       console.log(text.includes(queryName))
- 
- 
-       if ((text.toUpperCase().includes(queryName.toUpperCase()))){
-         createCarAd(link_image,text,link)
- 
+       if (firstCheck == 0){
+        firstCheck=1
+        
        }
+       else{
+        const childKey = childSnapshot.key;
+        const childData = childSnapshot.val();
+        const link_image=childData["link_images"]
+        const text=childData["name"]
+        const link=childData["link"]
+        lastKnownKey = childSnapshot.key;
+        createCarAd(childData)
+
+       }
+
+ 
        
      });
    });
