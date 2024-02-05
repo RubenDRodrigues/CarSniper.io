@@ -24,7 +24,7 @@
 }
  .container img {
 	 width: 200px;
-	 height: 200px;
+	 height: 100%;
 	 border-radius: 5px 0 0 5px;
 }
  .container .btn {
@@ -74,6 +74,7 @@
 }
  .container__text .container__text__timing .container__text__timing_time {
 	margin-right: 30px;
+	margin-bottom: 20px;
 }
  .container__text .container__text__timing h2 {
 	 margin-bottom: 5px;
