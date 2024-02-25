@@ -22,20 +22,61 @@
         </header>
     </div>
     
+    <div class="pageContent">
 
-     
-<div class="topnav">
-    <div class="search-container">
-     
-        <input type="text" id="searchBarId" placeholder="Procurar.." name="search">
-        <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
-   
+        <div class="filterSideMenu">
+
+          <div class="topnav">
+            <div class="search-container">
+            
+            <input type="text" id="searchBarId" placeholder="Procurar.." name="search">
+            <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
+       
+            </div>
+          </div>
+
+          <button id="dropdownBtn" src="filter.png" class="dropbtn">Ordenar</button>
+          <div class="dropdown">
+              
+              <div id="dropdown" class="dropdown-content">
+                <a id="dropdown_OrderByHigherToLower">Ordenar por preco (Maior para menor)</a>
+                <a id="dropdown_OrderByLowerToHigher">Ordenar por preco (menor para Maior)</a>
+                <a id="dropdown_OrderByName">Ordenar por nome</a>
+              </div>
+          </div>
+
+
+          <div class="d-flex">
+            <div class="wrapper">
+              <div class="price-input">
+                <div class="field">
+                  <span>Min</span>
+                  <input type="number" class="input-min" value="2500">
+                </div>
+                <div class="separator">-</div>
+                <div class="field">
+                  <span>Max</span>
+                  <input type="number" class="input-max" value="7500">
+                </div>
+              </div>
+              <div class="slider">
+                <div class="progress"></div>
+              </div>
+              <div class="range-input">
+                <input type="range" class="range-min" min="0" max="10000" value="2500" step="100">
+                <input type="range" class="range-max" min="0" max="10000" value="7500" step="100">
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+    
+      <div id="pageSection">
+          
+      </div>
+
     </div>
-  </div>
-
-    <section id="pageSection">
-        
-    </section>
 
 
     <div class="pagination">

@@ -23,6 +23,14 @@ const app = initializeApp(firebaseConfig);
 var itemsPerPage = 10
 var currentPage = 1
 var lastKnownKey = null;
+var orderFilter = "name"
+var limitTo = "limitToFirst"
+const rangeInput = document.querySelectorAll(".range-input input"),
+  priceInput = document.querySelectorAll(".price-input input"),
+  range = document.querySelector(".slider .progress");
+
+let minVal = parseInt(rangeInput[0].value),
+maxVal = parseInt(rangeInput[1].value);
 
 document.getElementById("btn_seeMore").onclick = seeMoreAds;
 document.getElementById("submitId").onclick = searchQuery;
@@ -36,13 +44,11 @@ window.onscroll = function() {
 
 // Create a new post reference with an auto-generated id
 const db = getDatabase();
-const firstQuery = query(ref(db, 'anuncios'),orderByValue() ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
-
+const firstQuery = query(ref(db, 'anuncios'),orderByChild(orderFilter) ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
 onValue(firstQuery, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
     const childData = childSnapshot.val();
-    console.log(childData)
     createCarAd(childData)
     lastKnownKey = childSnapshot.key;
     
@@ -53,11 +59,27 @@ onValue(firstQuery, (snapshot) => {
 
 function searchQuery(){
   // Create a new post reference with an auto-generated id
+  var counter = 0
   const elements = document.getElementsByClassName("container");
   while (elements.length > 0) elements[0].remove();
 
+  var newQueryRef =null //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
   const queryName = document.getElementById("searchBarId").value
-  const newQueryRef =query(ref(db, 'anuncios')) //,orderByChild("name"),startAt(queryName) ,endAt(queryName+"\uf8ff"));
+
+  if (queryName != ""){
+    newQueryRef =query(ref(db, 'anuncios'),orderByChild("name")) // ,endAt(queryName+"\uf8ff"));
+  }
+  else{
+    if (limitTo == "limitToFirst"){
+      newQueryRef =query(ref(db, 'anuncios'),orderByChild(orderFilter),startAt(queryName),limitToFirst(10)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+    }
+    else{
+      newQueryRef =query(ref(db, 'anuncios'),orderByChild(orderFilter),startAt(queryName),limitToLast(itemsPerPage)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+    }
+  }
+
+
+
   console.log(newQueryRef)
 
   onValue(newQueryRef, (snapshot) => {
@@ -70,6 +92,7 @@ function searchQuery(){
       console.log(text)
       console.log(queryName)
       console.log(text.includes(queryName))
+
       lastKnownKey = childSnapshot.key;
 
 
@@ -85,8 +108,18 @@ function searchQuery(){
 
 function seeMoreAds(){
    currentPage++
+   var counter = 1
    console.log(currentPage)
-   var nextQuery = query(ref(db, 'anuncios'),orderByKey() ,startAt(lastKnownKey), limitToFirst(itemsPerPage)  );
+   var nextQuery = null
+
+   if (limitTo == "limitToFirst"){
+
+    nextQuery =query(ref(db, 'anuncios'),orderByChild(orderFilter),limitToFirst(itemsPerPage),startAt(lastKnownKey)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+   }
+   else{
+    nextQuery =query(ref(db, 'anuncios'),orderByChild(orderFilter),limitToLast(itemsPerPage*currentPage)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+   }
+
    var firstCheck = 0
    console.log(nextQuery)
  
@@ -102,13 +135,15 @@ function seeMoreAds(){
         const link_image=childData["link_images"]
         const text=childData["name"]
         const link=childData["link"]
-        lastKnownKey = childSnapshot.key;
-        createCarAd(childData)
+        if (limitTo == "limitToFirst"){lastKnownKey = childSnapshot.key;}
+        if (counter < itemsPerPage){
+          createCarAd(childData)
+
+        }
+        counter++
 
        }
-
- 
-       
+    
      });
    });
  
@@ -124,11 +159,6 @@ function createCarAd(childData){
   const price=childData["preco"]
   const quilometer=childData["quilometros"]
   const location=childData["localizacao"]
-
-
-
-
-  
 
   const section = document.getElementById("pageSection");
   const mainDiv = document.createElement("div");
@@ -212,3 +242,95 @@ function create_button(parent_div,link){
 }
 
 
+
+
+let priceGap = 1000;
+
+priceInput.forEach((input) => {
+  input.addEventListener("input", (e) => {
+    let minPrice = parseInt(priceInput[0].value),
+      maxPrice = parseInt(priceInput[1].value);
+
+    if (maxPrice - minPrice >= priceGap && maxPrice <= rangeInput[1].max) {
+      if (e.target.className === "input-min") {
+        rangeInput[0].value = minPrice;
+        range.style.left = (minPrice / rangeInput[0].max) * 100 + "%";
+      } else {
+        rangeInput[1].value = maxPrice;
+        range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
+      }
+    }
+  });
+});
+
+rangeInput.forEach((input) => {
+  input.addEventListener("input", (e) => {
+    let minVal = parseInt(rangeInput[0].value),
+      maxVal = parseInt(rangeInput[1].value);
+
+    if (maxVal - minVal < priceGap) {
+      if (e.target.className === "range-min") {
+        rangeInput[0].value = maxVal - priceGap;
+      } else {
+        rangeInput[1].value = minVal + priceGap;
+      }
+    } else {
+      priceInput[0].value = minVal;
+      priceInput[1].value = maxVal;
+      range.style.left = (minVal / rangeInput[0].max) * 100 + "%";
+      range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
+    }
+  });
+});
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+document.getElementById("dropdownBtn").addEventListener('click', toggleDropdown)
+function toggleDropdown() {
+  document.getElementById("dropdown").classList.toggle("show");
+}
+
+
+document.getElementById("dropdown_OrderByHigherToLower").addEventListener('click', function() {  changeFilter('HigherToLower');})
+document.getElementById("dropdown_OrderByLowerToHigher").addEventListener('click', function() {  changeFilter("LowerToHigher");})
+document.getElementById("dropdown_OrderByName").addEventListener('click', function() {  changeFilter("name");})
+
+function changeFilter(type){
+
+  console.log(type)
+  
+  if (type == "HigherToLower"){
+    limitTo = "limitToFirst"
+    orderFilter = "preco"
+  }
+
+  if (type == "LowerToHigher"){
+    limitTo = "limitToLast"
+    orderFilter ="preco"
+  }
+
+  if (type == "name"){
+    limitTo = "limitToFirst"
+    orderFilter ="name"
+  }
+  currentPage = 1
+
+  searchQuery()
+  
+
+}
+
+
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
