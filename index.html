@@ -10,41 +10,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"        integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="        crossorigin="anonymous"/>
     
     <style>
-   
     </style>
 </head>
+
+<div class="header">
+      <img id="header_img" src="logo.png" >
+</div>
+
+
 <body>
 
 
-    <div>
-        <header>
-            <img src="logo.png" >
-        </header>
-    </div>
     
+ 
     <div class="pageContent">
 
-        <div class="filterSideMenu">
-
+        <div  class="flex-child-element filters">
+          
+      
+          <hr/>
+          <h2> Barra de Pesquisa </h2>
+          
           <div class="topnav">
             <div class="search-container">
             
             <input type="text" id="searchBarId" placeholder="Procurar.." name="search">
-            <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
        
             </div>
           </div>
 
-          <button id="dropdownBtn" src="filter.png" class="dropbtn">Ordenar</button>
-          <div class="dropdown">
-              
-              <div id="dropdown" class="dropdown-content">
-                <a id="dropdown_OrderByHigherToLower">Ordenar por preco (Maior para menor)</a>
-                <a id="dropdown_OrderByLowerToHigher">Ordenar por preco (menor para Maior)</a>
-                <a id="dropdown_OrderByName">Ordenar por nome</a>
-              </div>
-          </div>
-
+          <hr/>
+          <h2> Preço: </h2>
 
           <div class="d-flex">
             <div class="wrapper">
@@ -59,20 +55,34 @@
                   <input type="number" class="input-max" value="7500">
                 </div>
               </div>
-              <div class="slider">
-                <div class="progress"></div>
-              </div>
-              <div class="range-input">
-                <input type="range" class="range-min" min="0" max="10000" value="2500" step="100">
-                <input type="range" class="range-max" min="0" max="10000" value="7500" step="100">
-              </div>
             </div>
           </div>
+
+          <hr/>
+          <h2> Ordenar por:</h2>
+
+            <div class="select" tabindex="1">
+              <input class="selectopt" name="test" type="radio" id="optNome" checked>
+              <label for="optNome" class="option">Nome</label>
+              <input class="selectopt" name="test" type="radio" id="optPrecoAsc">
+              <label for="optPrecoAsc" class="option">Preço (Ascendente)</label>
+              <input class="selectopt" name="test" type="radio" id="optPrecoDesc">
+              <label for="optPrecoDesc" class="option">Preço (Descendente)</label>
+            </div>
+        <hr/>
+
+
+
+          <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
+  
+  
+  
         </div>
 
 
+
     
-      <div id="pageSection">
+      <div class="flex-child-element ads" id="pageSection">
           
       </div>
 

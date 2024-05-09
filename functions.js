@@ -25,30 +25,32 @@ var currentPage = 1
 var lastKnownKey = null;
 var orderFilter = "name"
 var limitTo = "limitToFirst"
-const rangeInput = document.querySelectorAll(".range-input input"),
+var rangeInput = document.querySelectorAll(".price-input .field"),
   priceInput = document.querySelectorAll(".price-input input"),
   range = document.querySelector(".slider .progress");
+var counter = 0;
 
-let minVal = parseInt(rangeInput[0].value),
-maxVal = parseInt(rangeInput[1].value);
+var minVal = parseInt(priceInput[0].value),
+ maxVal = parseInt(priceInput[1].value);
 
-document.getElementById("btn_seeMore").onclick = seeMoreAds;
+document.getElementById("btn_seeMore").onclick = searchQuery;
 document.getElementById("submitId").onclick = searchQuery;
+
 
 
 window.onscroll = function() {
   if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
-    seeMoreAds()
+    searchQuery()
   }
  }
 
-// Create a new post reference with an auto-generated id
 const db = getDatabase();
-const firstQuery = query(ref(db, 'anuncios'),orderByChild(orderFilter) ,startAt(itemsPerPage*(currentPage-1)), limitToFirst(itemsPerPage)  );
+
+const firstQuery = query(ref(db, 'anuncios-preco-ascendente') , limitToFirst(itemsPerPage)  );
 onValue(firstQuery, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
-    const childData = childSnapshot.val();
+    const childData = childSnapshot.val()[1];
     createCarAd(childData)
     lastKnownKey = childSnapshot.key;
     
@@ -57,67 +59,60 @@ onValue(firstQuery, (snapshot) => {
   onlyOnce: true
 });
 
-function searchQuery(){
-  // Create a new post reference with an auto-generated id
-  var counter = 0
+
+async function searchQuery() {
+  counter = 0;
+  var minVal = parseInt(priceInput[0].value);
+  var maxVal = parseInt(priceInput[1].value);
   const elements = document.getElementsByClassName("container");
   while (elements.length > 0) elements[0].remove();
+  var queryName = document.getElementById("searchBarId").value;
 
-  var newQueryRef =null //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
-  const queryName = document.getElementById("searchBarId").value
+  while (counter < itemsPerPage) {
+    var selectedRadioButton = document.querySelector('input[name="test"]:checked').getAttribute("id");
+    var newQueryRef;
 
-  if (queryName != ""){
-    newQueryRef =query(ref(db, 'anuncios'),orderByChild("name")) // ,endAt(queryName+"\uf8ff"));
-  }
-  else{
-    if (limitTo == "limitToFirst"){
-      newQueryRef =query(ref(db, 'anuncios'),orderByChild(orderFilter),startAt(queryName),limitToFirst(10)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+    if (selectedRadioButton == "optNome") {
+      newQueryRef = query(ref(db, 'anuncios-nome'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
+    } else if (selectedRadioButton == "optPrecoAsc") {
+      newQueryRef = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
+    } else if (selectedRadioButton == "optPrecoDesc") {
+      newQueryRef = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
     }
-    else{
-      newQueryRef =query(ref(db, 'anuncios'),orderByChild(orderFilter),startAt(queryName),limitToLast(itemsPerPage)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
-    }
-  }
 
+    await new Promise((resolve, reject) => {
+      onValue(newQueryRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          var childData = childSnapshot.val()[1];
+          var text = childData["name"];
+          var preco = childData["preco"];
+          lastKnownKey = childSnapshot.key;
 
-
-  console.log(newQueryRef)
-
-  onValue(newQueryRef, (snapshot) => {
-    snapshot.forEach((childSnapshot) => {
-      const childKey = childSnapshot.key;
-      const childData = childSnapshot.val();
-      const link_image=childData["link_images"]
-      const text=childData["name"]
-      const link=childData["link"]
-      console.log(text)
-      console.log(queryName)
-      console.log(text.includes(queryName))
-
-      lastKnownKey = childSnapshot.key;
-
-
-      if ((text.toUpperCase().includes(queryName.toUpperCase()))){
-        createCarAd(childData)
-
-      }
-      
+          if (text.toUpperCase().includes(queryName.toUpperCase()) && parseInt(minVal) <= parseInt(preco) && parseInt(preco) <= parseInt(maxVal)) {
+            createCarAd(childData);
+            counter = counter + 1;
+          }
+        });
+        resolve(); // Resolve the promise after processing the snapshot
+      });
     });
-  });
-
+  }
 }
+
+
+
 
 function seeMoreAds(){
    currentPage++
    var counter = 1
-   console.log(currentPage)
    var nextQuery = null
 
    if (limitTo == "limitToFirst"){
 
-    nextQuery =query(ref(db, 'anuncios'),orderByChild(orderFilter),limitToFirst(itemsPerPage),startAt(lastKnownKey)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+    nextQuery =query(ref(db, 'anuncios-preco-ascendente'),orderByChild(orderFilter),limitToFirst(itemsPerPage),startAt(lastKnownKey)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
    }
    else{
-    nextQuery =query(ref(db, 'anuncios'),orderByChild(orderFilter),limitToLast(itemsPerPage*currentPage)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
+    nextQuery =query(ref(db, 'anuncios-preco-ascendente'),orderByChild(orderFilter),limitToLast(itemsPerPage*currentPage)) //,startAt(queryName) ,endAt(queryName+"\uf8ff"));
    }
 
    var firstCheck = 0
@@ -131,7 +126,7 @@ function seeMoreAds(){
        }
        else{
         const childKey = childSnapshot.key;
-        const childData = childSnapshot.val();
+        const childData = childSnapshot.val()[1];
         const link_image=childData["link_images"]
         const text=childData["name"]
         const link=childData["link"]
@@ -152,7 +147,6 @@ function seeMoreAds(){
 
 function createCarAd(childData){
 
-
   const link_image=childData["link_images"]
   const text=childData["name"]
   const link=childData["link"]
@@ -165,9 +159,13 @@ function createCarAd(childData){
   mainDiv.classList.add("container")
   section.appendChild(mainDiv)
 
+  const imgDiv = document.createElement("div");
+  imgDiv.classList.add("container__img")
+  mainDiv.appendChild(imgDiv)
+
   const image = document.createElement("img");
   image.src = link_image;
-  mainDiv.appendChild(image)
+  imgDiv.appendChild(image)
 
   const container__text = document.createElement("div");
   container__text.classList.add("container__text")
@@ -231,7 +229,7 @@ function create_ad_property(parent_div,category,price){
 function create_button(parent_div,link){
   const button = document.createElement("button");
   button.classList.add("btn")
-  button.appendChild(document.createTextNode('Ver anuncio'))
+  //button.appendChild(document.createTextNode(''))
   button.onclick = function () {
     location.href = link;
   };
@@ -243,56 +241,6 @@ function create_button(parent_div,link){
 
 
 
-
-let priceGap = 1000;
-
-priceInput.forEach((input) => {
-  input.addEventListener("input", (e) => {
-    let minPrice = parseInt(priceInput[0].value),
-      maxPrice = parseInt(priceInput[1].value);
-
-    if (maxPrice - minPrice >= priceGap && maxPrice <= rangeInput[1].max) {
-      if (e.target.className === "input-min") {
-        rangeInput[0].value = minPrice;
-        range.style.left = (minPrice / rangeInput[0].max) * 100 + "%";
-      } else {
-        rangeInput[1].value = maxPrice;
-        range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
-      }
-    }
-  });
-});
-
-rangeInput.forEach((input) => {
-  input.addEventListener("input", (e) => {
-    let minVal = parseInt(rangeInput[0].value),
-      maxVal = parseInt(rangeInput[1].value);
-
-    if (maxVal - minVal < priceGap) {
-      if (e.target.className === "range-min") {
-        rangeInput[0].value = maxVal - priceGap;
-      } else {
-        rangeInput[1].value = minVal + priceGap;
-      }
-    } else {
-      priceInput[0].value = minVal;
-      priceInput[1].value = maxVal;
-      range.style.left = (minVal / rangeInput[0].max) * 100 + "%";
-      range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
-    }
-  });
-});
-/* When the user clicks on the button,
-toggle between hiding and showing the dropdown content */
-document.getElementById("dropdownBtn").addEventListener('click', toggleDropdown)
-function toggleDropdown() {
-  document.getElementById("dropdown").classList.toggle("show");
-}
-
-
-document.getElementById("dropdown_OrderByHigherToLower").addEventListener('click', function() {  changeFilter('HigherToLower');})
-document.getElementById("dropdown_OrderByLowerToHigher").addEventListener('click', function() {  changeFilter("LowerToHigher");})
-document.getElementById("dropdown_OrderByName").addEventListener('click', function() {  changeFilter("name");})
 
 function changeFilter(type){
 
