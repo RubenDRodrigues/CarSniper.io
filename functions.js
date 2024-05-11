@@ -43,7 +43,7 @@ window.onscroll = function() {
  }
 
 const db = getDatabase();
-const firstQuery = query(ref(db, 'anuncios-preco-ascendente'),orderByKey() , limitToFirst(itemsPerPage)  );
+const firstQuery = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt("10"), limitToFirst(10));
 onValue(firstQuery, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
