@@ -43,7 +43,7 @@ window.onscroll = function() {
  }
 
 const db = getDatabase();
-const firstQuery = query(ref(db, 'anuncios-preco-ascendente') , limitToFirst(itemsPerPage)  );
+const firstQuery = query(ref(db, 'anuncios-preco-ascendente'),orderByKey() , limitToFirst(itemsPerPage)  );
 onValue(firstQuery, (snapshot) => {
   snapshot.forEach((childSnapshot) => {
     const childKey = childSnapshot.key;
@@ -82,7 +82,7 @@ async function searchQuery() {
     } else if (selectedRadioButton == "optPrecoAsc") {
       newQueryRef = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
     } else if (selectedRadioButton == "optPrecoDesc") {
-      newQueryRef = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
+      newQueryRef = query(ref(db, 'anuncios-preco-descendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
     }
 
     const queryTimeout = new Promise((resolve, reject) => {
