@@ -29,7 +29,8 @@ var rangeInput = document.querySelectorAll(".price-input .field"),
   priceInput = document.querySelectorAll(".price-input input"),
   range = document.querySelector(".slider .progress");
 var counter = 0;
-
+var  list_of_cars= [];
+let searchQueryExecuting = false;
 var minVal = parseInt(priceInput[0].value),
  maxVal = parseInt(priceInput[1].value);
 
@@ -38,7 +39,14 @@ document.getElementById("submitId").onclick = clear_and_search;
 
 window.onscroll = function() {
   if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
-    searchQuery()
+    if (searchQueryExecuting) {
+      console.log('Search query is already executing');
+    }
+
+    else{
+      searchQuery()
+    }
+    
   }
  }
 
@@ -58,6 +66,7 @@ onValue(firstQuery, (snapshot) => {
 
 function clear_and_search(){
   const elements = document.getElementsByClassName("container");
+  list_of_cars= [];
 
   while (elements.length > 0) elements[0].remove();
   lastKnownKey="0"
@@ -72,23 +81,24 @@ async function searchQuery() {
   var maxVal = parseInt(priceInput[1].value);
   //
   var queryName = document.getElementById("searchBarId").value;
-
+  var failedQueryAttempt=0
+  searchQueryExecuting = true;
   while (counter < itemsPerPage) {
     var selectedRadioButton = document.querySelector('input[name="test"]:checked').getAttribute("id");
     var newQueryRef;
 
     if (selectedRadioButton == "optNome") {
-      newQueryRef = query(ref(db, 'anuncios-nome'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
+      newQueryRef = query(ref(db, 'anuncios-nome'), orderByKey(), startAt(lastKnownKey), limitToFirst(30));
     } else if (selectedRadioButton == "optPrecoAsc") {
-      newQueryRef = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
+      newQueryRef = query(ref(db, 'anuncios-preco-ascendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(30));
     } else if (selectedRadioButton == "optPrecoDesc") {
-      newQueryRef = query(ref(db, 'anuncios-preco-descendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(10));
+      newQueryRef = query(ref(db, 'anuncios-preco-descendente'), orderByKey(), startAt(lastKnownKey), limitToFirst(30));
     }
 
     const queryTimeout = new Promise((resolve, reject) => {
       setTimeout(() => {
         reject(new Error('Query timeout')); // Reject the promise after timeout
-      }, 5000); // Adjust timeout value as per your requirement
+      }, 1000); // Adjust timeout value as per your requirement
     });
 
     try {
@@ -97,11 +107,13 @@ async function searchQuery() {
           snapshot.forEach((childSnapshot) => {
             var childData = childSnapshot.val()[1];
             var text = childData["name"];
+            console.log(text)
             var preco = childData["preco"];
             lastKnownKey = childSnapshot.key;
 
-            if (text.toUpperCase().includes(queryName.toUpperCase()) && parseInt(minVal) <= parseInt(preco) && parseInt(preco) <= parseInt(maxVal)) {
+            if (text.toUpperCase().includes(queryName.toUpperCase()) && parseInt(minVal) <= parseInt(preco) && parseInt(preco) <= parseInt(maxVal) && !list_of_cars.includes(text)) {
               createCarAd(childData);
+              list_of_cars.push(text)
               counter = counter + 1;
             }
           });
@@ -113,6 +125,7 @@ async function searchQuery() {
       break; // Break the while loop if query times out
     }
   }
+  searchQueryExecuting = false;
 }
 
 
@@ -219,3 +232,4 @@ window.onclick = function(event) {
     }
   }
 }
+
