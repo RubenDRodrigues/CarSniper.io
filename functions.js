@@ -31,6 +31,7 @@ var rangeInput = document.querySelectorAll(".price-input .field"),
 var counter = 0;
 var  list_of_cars= [];
 let searchQueryExecuting = false;
+let noMoreAds = false;
 var minVal = parseInt(priceInput[0].value),
  maxVal = parseInt(priceInput[1].value);
 
@@ -39,7 +40,7 @@ document.getElementById("submitId").onclick = clear_and_search;
 
 window.onscroll = function() {
   if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
-    if (searchQueryExecuting) {
+    if (searchQueryExecuting || noMoreAds) {
       console.log('Search query is already executing');
     }
 
@@ -80,8 +81,8 @@ async function searchQuery() {
   var minVal = parseInt(priceInput[0].value);
   var maxVal = parseInt(priceInput[1].value);
   //
+  var oldkey=""
   var queryName = document.getElementById("searchBarId").value;
-  var failedQueryAttempt=0
   searchQueryExecuting = true;
   while (counter < itemsPerPage) {
     var selectedRadioButton = document.querySelector('input[name="test"]:checked').getAttribute("id");
@@ -107,9 +108,9 @@ async function searchQuery() {
           snapshot.forEach((childSnapshot) => {
             var childData = childSnapshot.val()[1];
             var text = childData["name"];
-            console.log(text)
             var preco = childData["preco"];
             lastKnownKey = childSnapshot.key;
+            
 
             if (text.toUpperCase().includes(queryName.toUpperCase()) && parseInt(minVal) <= parseInt(preco) && parseInt(preco) <= parseInt(maxVal) && !list_of_cars.includes(text)) {
               createCarAd(childData);
@@ -124,8 +125,18 @@ async function searchQuery() {
       console.error('Query timed out:', error);
       break; // Break the while loop if query times out
     }
+    console.log(oldkey)
+    console.log(lastKnownKey)
+    if (oldkey == lastKnownKey) {
+      console.log("True")
+      noMoreAds = true
+      break;
+    }
+  oldkey=lastKnownKey
+
   }
   searchQueryExecuting = false;
+
 }
 
 
