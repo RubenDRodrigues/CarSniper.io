@@ -146,9 +146,10 @@ function createCarAd(childData){
   const text=childData["name"]
   const link=childData["link"]
   const price=childData["preco"]
-  const quilometer=childData["quilometros"]
+  var quilometer=childData["quilometros"]
   const location=childData["localizacao"]
 
+  if(quilometer === undefined){quilometer = "Não Definido"}
   const section = document.getElementById("pageSection");
   const mainDiv = document.createElement("div");
   mainDiv.classList.add("container")
@@ -189,6 +190,9 @@ function createCarAd(childData){
   const container__text__timing = document.createElement("div");
   container__text__timing.classList.add("container__text__timing")
   container__text.appendChild(container__text__timing);
+
+
+
 
   create_ad_property(container__text__timing,"Preço:",price)
   create_ad_property(container__text__timing,"Quilómetros:",quilometer)
