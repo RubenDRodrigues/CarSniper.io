@@ -1,100 +1,75 @@
 <!DOCTYPE html>
-
-<script src="js/functions.js" type="module"></script>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Used Items Shop</title>
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"        integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="        crossorigin="anonymous"/>
-    
-    <style>
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Used Items Shop</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
+        integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
+        crossorigin="anonymous"/>
 </head>
 
-<div class="header">
-      <img id="header_img" src="css/logo.png" >
-</div>
-
-
 <body>
+  <div class="header">
+    <img id="header_img" src="css/logo.png" />
+  </div>
 
-
-    
- 
-    <div class="pageContent">
-
-        <div  class="flex-child-element filters">
-          
-      
-          <h2> Barra de Pesquisa </h2>
-          
-          <div class="topnav">
-            <div class="search-container">
-            
-            <input type="text" id="searchBarId" placeholder="Procurar.." name="search">
-       
-            </div>
-          </div>
-
-          <hr/>
-          <h2> Preço: </h2>
-
-          <div class="d-flex">
-            <div class="wrapper">
-              <div class="price-input">
-                <div class="field">
-                  <span>Min</span>
-                  <input type="number" class="input-min" value="2500">
-                </div>
-                <div class="separator">-</div>
-                <div class="field">
-                  <span>Max</span>
-                  <input type="number" class="input-max" value="7500">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <hr/>
-          <h2> Ordenar por:</h2>
-
-            <div class="select" tabindex="1">
-              <input class="selectopt" name="test" type="radio" id="optNome" checked>
-              <label for="optNome" class="option">Nome</label>
-              <input class="selectopt" name="test" type="radio" id="optPrecoAsc">
-              <label for="optPrecoAsc" class="option">Preço (Ascendente)</label>
-              <input class="selectopt" name="test" type="radio" id="optPrecoDesc">
-              <label for="optPrecoDesc" class="option">Preço (Descendente)</label>
-            </div>
-        <hr/>
-
-
-
-          <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
-  
-  
-  
+  <div class="pageContent">
+    <div class="flex-child-element filters">
+      <h2>Barra de Pesquisa</h2>
+      <div class="topnav">
+        <div class="search-container">
+          <input type="text" id="searchBarId" placeholder="Procurar.." name="search">
         </div>
-
-
-
-    
-      <div class="flex-child-element ads" id="pageSection">
-          
       </div>
 
+      <hr/>
+      <h2>Preço:</h2>
+      <div class="d-flex">
+        <div class="wrapper">
+          <div class="price-input">
+            <div class="field">
+              <span>Min</span>
+              <input type="number" class="input-min" value="2500">
+            </div>
+            <div class="separator">-</div>
+            <div class="field">
+              <span>Max</span>
+              <input type="number" class="input-max" value="7500">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr/>
+      <h2>Ordenar por:</h2>
+      <div class="select" tabindex="1">
+        <input class="selectopt" name="test" type="radio" id="optNome" checked>
+        <label for="optNome" class="option">Nome</label>
+        <input class="selectopt" name="test" type="radio" id="optPrecoAsc">
+        <label for="optPrecoAsc" class="option">Preço (Ascendente)</label>
+        <input class="selectopt" name="test" type="radio" id="optPrecoDesc">
+        <label for="optPrecoDesc" class="option">Preço (Descendente)</label>
+      </div>
+
+      <hr/>
+      <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
     </div>
 
+    <div class="flex-child-element ads" id="pageSection"></div>
+  </div>
 
-    <div class="pagination">
+  <div class="pagination">
     <a id="btn_seeMore" class="active">Ver Mais</a>
-    </div>
+  </div>
 
-    <footer>
-        <p>&copy; 2024 Used Items Shop. All rights reserved.</p>
-    </footer>
+  <footer>
+    <p>&copy; 2024 Used Items Shop. All rights reserved.</p>
+  </footer>
 
+  <!-- Load your module AFTER the DOM so the elements exist -->
+  <script type="module" src="js/functions.js"></script>
 </body>
 </html>
