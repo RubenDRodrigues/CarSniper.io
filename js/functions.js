@@ -54,6 +54,7 @@ function getSelectedPath() {
   return "anuncios-preco-ascendente";
 }
 
+// Replace your fetchChunk with this:
 async function fetchChunk(path, startIndex, pageSize) {
   const q = query(
     ref(db, path),
@@ -64,15 +65,33 @@ async function fetchChunk(path, startIndex, pageSize) {
   const snap = await get(q);
   const out = [];
   if (!snap.exists()) return out;
+
   snap.forEach(child => {
-    const k   = child.key;   // "0","1",...
-    const val = child.val(); // [id, payload]
-    if (Array.isArray(val) && val.length >= 2 && typeof val[1] === "object") {
-      out.push({ key: Number(k), id: val[0], payload: val[1] });
+    const k = child.key;        // "0","1",...
+    const val = child.val();    // can be ["id",{...}] OR {"0":"id","1":{...}}
+
+    // normalize to pair [id, payload]
+    let id, payload;
+
+    if (Array.isArray(val) && val.length >= 2) {
+      id = val[0];
+      payload = val[1];
+    } else if (val && typeof val === "object" && ("0" in val) && ("1" in val)) {
+      id = val["0"];
+      payload = val["1"];
+    } else {
+      // skip stray entries (e.g., "visited_pages" or malformed rows)
+      return;
+    }
+
+    if (payload && typeof payload === "object") {
+      out.push({ key: Number(k), id, payload });
     }
   });
+
   return out;
 }
+
 
 function clearRenderedCards() {
   const nodes = document.getElementsByClassName("container");
