@@ -38,7 +38,11 @@ window.onscroll = function () {
     if (!searchQueryExecuting && !noMoreAds) searchQuery();
   }
 };
-
+(async () => {
+  const path = "anuncios-preco-ascendente";
+  const test = await get(query(ref(db, path), orderByKey(), startAt("0"), limitToFirst(3)));
+  console.log("[DEBUG] first 3 rows:", test.val());
+})();
 // ------- Helpers -------
 function parsePriceInt(v) {
   const s = (v ?? "").toString().replace(/\u202f|\xa0/g, "");
