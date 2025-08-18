@@ -1,72 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Used Items Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CarSniper</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
         integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
         crossorigin="anonymous"/>
+
+  <!-- Favicons (optional)
+  <link rel="icon" type="image/png" href="favicon.png" />
+  -->
 </head>
 
 <body>
-  <div class="header">
-    <img id="header_img" src="css/logo.png" />
-  </div>
-
-  <div class="pageContent">
-    <div class="flex-child-element filters">
-      <h2>Barra de Pesquisa</h2>
-      <div class="topnav">
-        <div class="search-container">
-          <input type="text" id="searchBarId" placeholder="Procurar.." name="search">
-        </div>
+  <header class="header">
+    <div class="header__inner">
+      <div class="brand">
+        <img id="header_img" src="css/logo.png" alt="CarSniper" />
+        <span class="brand__name">CarSniper</span>
       </div>
 
-      <hr/>
-      <h2>Preço:</h2>
-      <div class="d-flex">
-        <div class="wrapper">
-          <div class="price-input">
-            <div class="field">
-              <span>Min</span>
-              <input type="number" class="input-min" value="2500">
-            </div>
-            <div class="separator">-</div>
-            <div class="field">
-              <span>Max</span>
-              <input type="number" class="input-max" value="7500">
-            </div>
+      <div class="header__actions">
+        <a id="btn_seeMore" class="btn btn--ghost">Ver Mais</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="pageContent">
+    <!-- Filters -->
+    <aside class="filters flex-child-element">
+      <h2 class="filters__title">Barra de Pesquisa</h2>
+
+      <div class="topnav">
+        <label class="search">
+          <i class="fa fa-search"></i>
+          <input type="text" id="searchBarId" placeholder="Procurar…" name="search" />
+        </label>
+      </div>
+
+      <hr />
+
+      <h2>Preço</h2>
+      <div class="price">
+        <div class="price-input">
+          <div class="field">
+            <span>Min</span>
+            <input type="number" class="input-min" value="2500" inputmode="numeric" />
+          </div>
+          <div class="separator">—</div>
+          <div class="field">
+            <span>Max</span>
+            <input type="number" class="input-max" value="7500" inputmode="numeric" />
           </div>
         </div>
+        <p class="hint">Dica: deixe em branco para não limitar.</p>
       </div>
 
-      <hr/>
-      <h2>Ordenar por:</h2>
-      <div class="select" tabindex="1">
-        <input class="selectopt" name="test" type="radio" id="optNome" checked>
+      <hr />
+
+      <h2>Ordenar por</h2>
+      <div class="select" tabindex="0" role="radiogroup" aria-label="Ordenar por">
+        <!-- Keep the same IDs & name so your JS keeps working -->
+        <input class="selectopt" name="test" type="radio" id="optNome" checked />
         <label for="optNome" class="option">Nome</label>
-        <input class="selectopt" name="test" type="radio" id="optPrecoAsc">
-        <label for="optPrecoAsc" class="option">Preço (Ascendente)</label>
-        <input class="selectopt" name="test" type="radio" id="optPrecoDesc">
-        <label for="optPrecoDesc" class="option">Preço (Descendente)</label>
+
+        <input class="selectopt" name="test" type="radio" id="optPrecoAsc" />
+        <label for="optPrecoAsc" class="option">Preço (Asc.)</label>
+
+        <input class="selectopt" name="test" type="radio" id="optPrecoDesc" />
+        <label for="optPrecoDesc" class="option">Preço (Desc.)</label>
       </div>
 
-      <hr/>
-      <button type="submit" id="submitId"><i class="fa fa-search"></i></button>
-    </div>
+      <hr />
+      <button type="button" id="submitId" class="btn btn--primary">
+        <i class="fa fa-search"></i> Aplicar filtros
+      </button>
+    </aside>
 
-    <div class="flex-child-element ads" id="pageSection"></div>
-  </div>
+    <!-- Ads grid -->
+    <section class="ads flex-child-element" id="pageSection" aria-live="polite" aria-busy="false">
+      <!-- Cards are injected here by functions.js (createCarAd) -->
+    </section>
+  </main>
 
-  <div class="pagination">
-    <a id="btn_seeMore" class="active">Ver Mais</a>
-  </div>
-
-  <footer>
-    <p>&copy; 2024 Used Items Shop. All rights reserved.</p>
+  <footer class="siteFooter">
+    <p>&copy; 2025 CarSniper. Todos os direitos reservados.</p>
   </footer>
 
   <!-- Load your module AFTER the DOM so the elements exist -->
