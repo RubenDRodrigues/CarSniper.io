@@ -1,4 +1,5 @@
-<script type="module">
+// functions.js — pure JS module (no <script> tags)
+
 // Firebase v10 (modular)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -21,10 +22,10 @@ const db  = getDatabase(app);
 
 // ------- UI/State -------
 const itemsPerPage = 10;
-let lastKnownKey = null;     // numeric index of last item we consumed
+let lastKnownKey = null;
 let searchQueryExecuting = false;
 let noMoreAds = false;
-const list_of_cars = [];     // to avoid dup renders by name
+const list_of_cars = [];
 
 const rangeInputs = document.querySelectorAll(".price-input input");
 const searchInput = document.getElementById("searchBarId");
@@ -40,7 +41,7 @@ window.onscroll = function () {
 
 // ------- Helpers -------
 function parsePriceInt(v) {
-  const s = (v ?? "").toString().replace(/\u202f|\xa0/g, ""); // normalize thin/nbsp spaces
+  const s = (v ?? "").toString().replace(/\u202f|\xa0/g, "");
   const digits = s.match(/\d+/g);
   return digits ? parseInt(digits.join(""), 10) : Number.POSITIVE_INFINITY;
 }
@@ -53,10 +54,6 @@ function getSelectedPath() {
   return "anuncios-preco-ascendente";
 }
 
-/**
- * Fetch a chunk by numeric key index (array index).
- * Returns [{key: Number, id, payload}, ...]
- */
 async function fetchChunk(path, startIndex, pageSize) {
   const q = query(
     ref(db, path),
@@ -68,8 +65,8 @@ async function fetchChunk(path, startIndex, pageSize) {
   const out = [];
   if (!snap.exists()) return out;
   snap.forEach(child => {
-    const k   = child.key;         // "0", "1", ...
-    const val = child.val();       // should be [id, payload]
+    const k   = child.key;   // "0","1",...
+    const val = child.val(); // [id, payload]
     if (Array.isArray(val) && val.length >= 2 && typeof val[1] === "object") {
       out.push({ key: Number(k), id: val[0], payload: val[1] });
     }
@@ -168,7 +165,7 @@ function create_button(parent_div, link) {
   parent_div.appendChild(button);
 }
 
-// ------- Main search/paginate -------
+// ------- Main paginate/search -------
 async function searchQuery() {
   if (searchQueryExecuting || noMoreAds) return;
   searchQueryExecuting = true;
@@ -178,14 +175,11 @@ async function searchQuery() {
   const maxVal = parseInt(rangeInputs[1]?.value || "999999999", 10);
 
   const path = getSelectedPath();
-
-  // compute where to start (next array index)
   let startIndex = (lastKnownKey == null) ? 0 : lastKnownKey + 1;
 
   let added = 0;
-  // fetch in chunks until we fill one page or hit end
   while (added < itemsPerPage) {
-    const chunk = await fetchChunk(path, startIndex, 50); // pull ahead to have room for filtering
+    const chunk = await fetchChunk(path, startIndex, 50);
     if (chunk.length === 0) { noMoreAds = true; break; }
 
     for (const row of chunk) {
@@ -206,12 +200,10 @@ async function searchQuery() {
       }
     }
 
-    // advance cursor
     const lastInChunk = chunk[chunk.length - 1];
     lastKnownKey = lastInChunk.key;
     startIndex = lastKnownKey + 1;
 
-    // end if we visibly reached the list end (chunk smaller than asked)
     if (chunk.length < 50) { if (added === 0) noMoreAds = true; break; }
   }
 
@@ -221,14 +213,10 @@ async function searchQuery() {
 // initial load
 searchQuery();
 
-
 // Close dropdown when clicking outside
 window.addEventListener("click", (event) => {
   if (!event.target.matches('.dropbtn')) {
     const dropdowns = document.getElementsByClassName("dropdown-content");
-    for (let i = 0; i < dropdowns.length; i++) {
-      dropdowns[i].classList.remove('show');
-    }
+    for (let i = 0; i < dropdowns.length; i++) dropdowns[i].classList.remove('show');
   }
 });
-</script>
