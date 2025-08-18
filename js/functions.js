@@ -1,11 +1,13 @@
-// functions.js — pure JS module (no <script> tags)
+// functions.js — ES module
+// Loads Firebase, fetches paginated lists of [id, payload] pairs from RTDB,
+// filters by name/price, and renders cards.
 
-// Firebase v10 (modular)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getDatabase, ref, query, orderByKey, startAt, limitToFirst, get
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* ---------------- Firebase ---------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyCmCcnRPWb5J8nZiPR_zWViUA3MDNBqPRE",
   authDomain: "carsniper-fe526.firebaseapp.com",
@@ -16,40 +18,32 @@ const firebaseConfig = {
   appId: "1:873602962190:web:05a721b986cf24cccb3d5f",
   measurementId: "G-9ZP4616YZS"
 };
-
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ------- UI/State -------
+/* ---------------- State & DOM refs ---------------- */
 const itemsPerPage = 10;
-let lastKnownKey = null;
+let lastKnownKey = null;            // last numeric array index we've rendered
 let searchQueryExecuting = false;
 let noMoreAds = false;
-const list_of_cars = [];
+const seenIds = new Set();          // dedupe by ID (names can repeat)
 
-const rangeInputs = document.querySelectorAll(".price-input input");
 const searchInput = document.getElementById("searchBarId");
+const rangeInputs = document.querySelectorAll(".price-input input");
+const seeMoreBtn  = document.getElementById("btn_seeMore");
+const submitBtn   = document.getElementById("submitId");
 
-document.getElementById("btn_seeMore").onclick = searchQuery;
-document.getElementById("submitId").onclick   = clear_and_search;
+/* ---------------- Events ---------------- */
+if (seeMoreBtn)  seeMoreBtn.addEventListener("click", searchQuery);
+if (submitBtn)   submitBtn.addEventListener("click", clear_and_search);
 
-window.onscroll = function () {
+window.addEventListener("scroll", () => {
   if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 8) {
     if (!searchQueryExecuting && !noMoreAds) searchQuery();
   }
-};
-(async () => {
-  const path = "anuncios-preco-ascendente";
-  const test = await get(query(ref(db, path), orderByKey(), startAt("0"), limitToFirst(3)));
-  console.log("[DEBUG] first 3 rows:", test.val());
-})();
-// ------- Helpers -------
-function parsePriceInt(v) {
-  const s = (v ?? "").toString().replace(/\u202f|\xa0/g, "");
-  const digits = s.match(/\d+/g);
-  return digits ? parseInt(digits.join(""), 10) : Number.POSITIVE_INFINITY;
-}
+});
 
+/* ---------------- Helpers ---------------- */
 function getSelectedPath() {
   const selected = document.querySelector('input[name="test"]:checked')?.id;
   if (selected === "optNome")      return "anuncios-nome";
@@ -57,8 +51,26 @@ function getSelectedPath() {
   if (selected === "optPrecoDesc") return "anuncios-preco-descendente";
   return "anuncios-preco-ascendente";
 }
+function isNumericKey(k) { return /^\d+$/.test(k); }
 
-// Replace your fetchChunk with this:
+function parsePriceInt(v) {
+  const s = (v ?? "").toString().replace(/\u202f|\xa0/g, "");
+  const digits = s.match(/\d+/g);
+  return digits ? parseInt(digits.join(""), 10) : Number.POSITIVE_INFINITY;
+}
+
+/** Normalize a row value into [id, payload] pair. Accepts ["id",{…}] OR {"0":"id","1":{…}} */
+function normalizePair(val) {
+  if (Array.isArray(val) && val.length >= 2) {
+    return [val[0], val[1]];
+  }
+  if (val && typeof val === "object" && ("0" in val) && ("1" in val)) {
+    return [val["0"], val["1"]];
+  }
+  return null;
+}
+
+/** Fetch a chunk of rows starting at array index, limit pageSize. Returns [{key, id, payload}] */
 async function fetchChunk(path, startIndex, pageSize) {
   const q = query(
     ref(db, path),
@@ -71,31 +83,19 @@ async function fetchChunk(path, startIndex, pageSize) {
   if (!snap.exists()) return out;
 
   snap.forEach(child => {
-    const k = child.key;        // "0","1",...
-    const val = child.val();    // can be ["id",{...}] OR {"0":"id","1":{...}}
+    const k = child.key;          // "0", "1", ...
+    if (!isNumericKey(k)) return; // skip stray keys like "visited_pages"
+    const val = child.val();
+    const pair = normalizePair(val);
+    if (!pair) return;
 
-    // normalize to pair [id, payload]
-    let id, payload;
-
-    if (Array.isArray(val) && val.length >= 2) {
-      id = val[0];
-      payload = val[1];
-    } else if (val && typeof val === "object" && ("0" in val) && ("1" in val)) {
-      id = val["0"];
-      payload = val["1"];
-    } else {
-      // skip stray entries (e.g., "visited_pages" or malformed rows)
-      return;
-    }
-
+    const [id, payload] = pair;
     if (payload && typeof payload === "object") {
       out.push({ key: Number(k), id, payload });
     }
   });
-
   return out;
 }
-
 
 function clearRenderedCards() {
   const nodes = document.getElementsByClassName("container");
@@ -103,24 +103,26 @@ function clearRenderedCards() {
 }
 
 function clear_and_search() {
-  list_of_cars.length = 0;
+  seenIds.clear();
   lastKnownKey = null;
   noMoreAds = false;
   clearRenderedCards();
   searchQuery();
 }
 
-// ------- Renderers (your original) -------
-function createCarAd(childData) {
-  const link_image = childData["link_images"];
-  const text       = childData["name"];
-  const link       = childData["link"];
-  const price      = childData["preco"];
+/* ---------------- Rendering ---------------- */
+function createCarAd(childData){
+  const link_image = childData["link_images"] || childData["image"] || "";
+  const text       = childData["name"] || "(Sem título)";
+  const link       = childData["link"] || "#";
+  const price      = childData["preco"] ?? "—";
   let quilometer   = childData["quilometros"];
-  const location   = childData["localizacao"];
-  if (quilometer === undefined) quilometer = "Não Definido";
+  const location   = childData["localizacao"] || "—";
+  if (quilometer === undefined || quilometer === null) quilometer = "Não Definido";
 
   const section = document.getElementById("pageSection");
+  if (!section) { console.warn("#pageSection not found"); return; }
+
   const mainDiv = document.createElement("div");
   mainDiv.classList.add("container");
   section.appendChild(mainDiv);
@@ -130,6 +132,7 @@ function createCarAd(childData) {
   mainDiv.appendChild(imgDiv);
 
   const image = document.createElement("img");
+  image.loading = "lazy";
   image.src = link_image;
   imgDiv.appendChild(image);
 
@@ -146,25 +149,25 @@ function createCarAd(childData) {
     const words = (Array.isArray(specs) ? specs[0] : "").split('\n');
     for (let w of words) {
       if (!w) continue;
-      const descriptionButton = document.createElement("button");
-      descriptionButton.classList.add("button_description");
-      descriptionButton.appendChild(document.createTextNode(w));
-      container__text.appendChild(descriptionButton);
+      const chip = document.createElement("button");
+      chip.classList.add("button_description");
+      chip.appendChild(document.createTextNode(w));
+      container__text.appendChild(chip);
     }
   } catch (_) {}
 
-  const container__text__timing = document.createElement("div");
-  container__text__timing.classList.add("container__text__timing");
-  container__text.appendChild(container__text__timing);
+  const info = document.createElement("div");
+  info.classList.add("container__text__timing");
+  container__text.appendChild(info);
 
-  create_ad_property(container__text__timing, "Preço:", price);
-  create_ad_property(container__text__timing, "Quilómetros:", quilometer);
-  create_ad_property(container__text__timing, "Localização", location);
+  create_ad_property(info,"Preço:",price);
+  create_ad_property(info,"Quilómetros:",quilometer);
+  create_ad_property(info,"Localização",location);
 
-  create_button(mainDiv, link);
+  create_button(mainDiv,link);
 }
 
-function create_ad_property(parent_div, category, value) {
+function create_ad_property(parent_div, category, value){
   const row = document.createElement("div");
   row.classList.add("container__text__timing_time");
   parent_div.appendChild(row);
@@ -178,30 +181,33 @@ function create_ad_property(parent_div, category, value) {
   row.appendChild(val);
 }
 
-function create_button(parent_div, link) {
+function create_button(parent_div,link){
   const button = document.createElement("button");
   button.classList.add("btn");
-  button.onclick = () => (location.href = link);
+  button.onclick = function () { location.href = link; };
   const icon = document.createElement("i");
   icon.classList.add("fa", "fa-arrow-right");
   button.appendChild(icon);
   parent_div.appendChild(button);
 }
 
-// ------- Main paginate/search -------
+/* ---------------- Main paginate/search ---------------- */
 async function searchQuery() {
   if (searchQueryExecuting || noMoreAds) return;
   searchQueryExecuting = true;
 
   const qName = (searchInput?.value || "").toUpperCase();
-  const minVal = parseInt(rangeInputs[0]?.value || "0", 10);
-  const maxVal = parseInt(rangeInputs[1]?.value || "999999999", 10);
+  const minValRaw = parseInt(rangeInputs?.[0]?.value ?? "0", 10);
+  const maxValRaw = parseInt(rangeInputs?.[1]?.value ?? "999999999", 10);
+  const minVal = Number.isFinite(minValRaw) ? minValRaw : 0;
+  const maxVal = Number.isFinite(maxValRaw) ? maxValRaw : 999999999;
 
   const path = getSelectedPath();
   let startIndex = (lastKnownKey == null) ? 0 : lastKnownKey + 1;
 
   let added = 0;
   while (added < itemsPerPage) {
+    // fetch a generous chunk, we’ll filter client-side
     const chunk = await fetchChunk(path, startIndex, 50);
     if (chunk.length === 0) { noMoreAds = true; break; }
 
@@ -214,32 +220,38 @@ async function searchQuery() {
         text.toUpperCase().includes(qName) &&
         precoInt >= minVal &&
         precoInt <= maxVal &&
-        !list_of_cars.includes(text)
+        !seenIds.has(row.id)
       ) {
-        createCarAd(data);
-        list_of_cars.push(text);
+        try {
+          createCarAd(data);
+          seenIds.add(row.id);
+        } catch (e) {
+          console.error("Render failed for id", row.id, e, data);
+        }
         added++;
         if (added >= itemsPerPage) break;
       }
     }
 
+    // advance cursor to the last numeric key we processed
     const lastInChunk = chunk[chunk.length - 1];
     lastKnownKey = lastInChunk.key;
     startIndex = lastKnownKey + 1;
 
+    // If the chunk was smaller than requested, we've likely hit the end
     if (chunk.length < 50) { if (added === 0) noMoreAds = true; break; }
   }
 
   searchQueryExecuting = false;
 }
 
-// initial load
+/* ---------------- Initial load ---------------- */
 searchQuery();
 
-// Close dropdown when clicking outside
-window.addEventListener("click", (event) => {
-  if (!event.target.matches('.dropbtn')) {
-    const dropdowns = document.getElementsByClassName("dropdown-content");
-    for (let i = 0; i < dropdowns.length; i++) dropdowns[i].classList.remove('show');
-  }
-});
+/* -------------- Optional tiny debug --------------
+(async () => {
+  const path = "anuncios-preco-ascendente";
+  const test = await get(query(ref(db, path), orderByKey(), startAt("0"), limitToFirst(3)));
+  console.log("[DEBUG] first 3 rows raw:", test.val());
+})();
+-------------------------------------------------- */
