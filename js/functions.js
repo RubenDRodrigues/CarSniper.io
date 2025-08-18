@@ -1,6 +1,5 @@
-// functions.js — ES module
-// Loads Firebase, fetches paginated lists of [id, payload] pairs from RTDB,
-// filters by name/price, and renders cards.
+// functions.js — handles normal [id, payload] rows AND wrapper rows like
+// ["scraped_ads", { "<id>": {...}, "<id2>": {...} }]
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -21,19 +20,23 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-/* ---------------- State & DOM refs ---------------- */
+/* ---------------- State & DOM ---------------- */
 const itemsPerPage = 10;
-let lastKnownKey = null;            // last numeric array index we've rendered
+let lastKnownKey = null;            // numeric key for "normal" rows
 let searchQueryExecuting = false;
 let noMoreAds = false;
-const seenIds = new Set();          // dedupe by ID (names can repeat)
+const seenIds = new Set();          // dedupe by ID
+
+// "Wrapper-mode" (when a row payload is a big dict of many ads)
+let flatMode = false;
+let flatList = [];                  // [{id, payload}, ...] built client-side
+let flatCursor = 0;                 // where we are in flatList
+let lastPath = null;                // track when the selected source list changes
 
 const searchInput = document.getElementById("searchBarId");
 const rangeInputs = document.querySelectorAll(".price-input input");
 const seeMoreBtn  = document.getElementById("btn_seeMore");
 const submitBtn   = document.getElementById("submitId");
-
-/* ---------------- Events ---------------- */
 if (seeMoreBtn)  seeMoreBtn.addEventListener("click", searchQuery);
 if (submitBtn)   submitBtn.addEventListener("click", clear_and_search);
 
@@ -59,42 +62,67 @@ function parsePriceInt(v) {
   return digits ? parseInt(digits.join(""), 10) : Number.POSITIVE_INFINITY;
 }
 
-/** Normalize a row value into [id, payload] pair. Accepts ["id",{…}] OR {"0":"id","1":{…}} */
 function normalizePair(val) {
-  if (Array.isArray(val) && val.length >= 2) {
-    return [val[0], val[1]];
-  }
-  if (val && typeof val === "object" && ("0" in val) && ("1" in val)) {
-    return [val["0"], val["1"]];
-  }
+  // Accept ["id",{…}] or {"0":"id","1":{…}}
+  if (Array.isArray(val) && val.length >= 2) return [val[0], val[1]];
+  if (val && typeof val === "object" && ("0" in val) && ("1" in val)) return [val["0"], val["1"]];
   return null;
 }
 
-/** Fetch a chunk of rows starting at array index, limit pageSize. Returns [{key, id, payload}] */
+function looksLikeAd(obj) {
+  if (!obj || typeof obj !== "object") return false;
+  return ("name" in obj) || ("preco" in obj) || ("link" in obj);
+}
+
+/** Fetch a chunk of rows by numeric index. Returns [{key, id, payload}] */
 async function fetchChunk(path, startIndex, pageSize) {
-  const q = query(
-    ref(db, path),
-    orderByKey(),
-    startAt(String(startIndex)),
-    limitToFirst(pageSize)
-  );
+  const q = query(ref(db, path), orderByKey(), startAt(String(startIndex)), limitToFirst(pageSize));
   const snap = await get(q);
   const out = [];
   if (!snap.exists()) return out;
 
   snap.forEach(child => {
-    const k = child.key;          // "0", "1", ...
-    if (!isNumericKey(k)) return; // skip stray keys like "visited_pages"
-    const val = child.val();
-    const pair = normalizePair(val);
+    const k = child.key;                  // "0","1",...
+    if (!isNumericKey(k)) return;         // skip stray keys
+    const pair = normalizePair(child.val());
     if (!pair) return;
-
     const [id, payload] = pair;
-    if (payload && typeof payload === "object") {
-      out.push({ key: Number(k), id, payload });
-    }
+    out.push({ key: Number(k), id, payload });
   });
   return out;
+}
+
+/** If a row is a wrapper (payload is a big dict of many ads), flatten it. */
+function flattenIfWrapper(rows, path) {
+  // If we already went flat for this path, keep that state
+  if (flatMode && lastPath === path) return;
+
+  flatMode = false;
+  flatList = [];
+  flatCursor = 0;
+  lastPath = path;
+
+  if (!rows || rows.length === 0) return;
+
+  // A wrapper row is usually the only row, with id like "scraped_ads" and payload = dict-of-ads
+  const r = rows[0];
+  if (r && r.payload && !looksLikeAd(r.payload) && typeof r.payload === "object") {
+    // Convert dict-of-ads -> array of {id, payload}
+    flatList = Object.entries(r.payload)
+      .map(([id, payload]) => ({ id, payload }))
+      .filter(x => x.payload && typeof x.payload === "object");
+
+    // Sort client-side to mimic the selected list behavior
+    if (path === "anuncios-nome") {
+      flatList.sort((a, b) => String(a.payload.name || a.id).localeCompare(String(b.payload.name || b.id)));
+    } else if (path === "anuncios-preco-ascendente") {
+      flatList.sort((a, b) => parsePriceInt(a.payload.preco) - parsePriceInt(b.payload.preco));
+    } else if (path === "anuncios-preco-descendente") {
+      flatList.sort((a, b) => parsePriceInt(b.payload.preco) - parsePriceInt(a.payload.preco));
+    }
+
+    flatMode = true;
+  }
 }
 
 function clearRenderedCards() {
@@ -106,6 +134,9 @@ function clear_and_search() {
   seenIds.clear();
   lastKnownKey = null;
   noMoreAds = false;
+  flatMode = false;
+  flatList = [];
+  flatCursor = 0;
   clearRenderedCards();
   searchQuery();
 }
@@ -203,43 +234,83 @@ async function searchQuery() {
   const maxVal = Number.isFinite(maxValRaw) ? maxValRaw : 999999999;
 
   const path = getSelectedPath();
-  let startIndex = (lastKnownKey == null) ? 0 : lastKnownKey + 1;
 
   let added = 0;
-  while (added < itemsPerPage) {
-    // fetch a generous chunk, we’ll filter client-side
-    const chunk = await fetchChunk(path, startIndex, 50);
-    if (chunk.length === 0) { noMoreAds = true; break; }
 
-    for (const row of chunk) {
-      const data = row.payload || {};
+  // If we are already in flatMode for this path, just page the flat list
+  if (flatMode && lastPath === path) {
+    while (added < itemsPerPage && flatCursor < flatList.length) {
+      const row = flatList[flatCursor++];
+      const data = row?.payload || {};
       const text = (data.name || "").toString();
       const precoInt = parsePriceInt(data.preco);
-
       if (
         text.toUpperCase().includes(qName) &&
         precoInt >= minVal &&
         precoInt <= maxVal &&
         !seenIds.has(row.id)
       ) {
-        try {
-          createCarAd(data);
-          seenIds.add(row.id);
-        } catch (e) {
-          console.error("Render failed for id", row.id, e, data);
+        try { createCarAd(data); seenIds.add(row.id); } catch (e) { console.error(e); }
+        added++;
+      }
+    }
+    if (flatCursor >= flatList.length) noMoreAds = true;
+    searchQueryExecuting = false;
+    return;
+  }
+
+  // Normal mode: fetch rows from RTDB
+  let startIndex = (lastKnownKey == null) ? 0 : lastKnownKey + 1;
+
+  while (added < itemsPerPage) {
+    const rows = await fetchChunk(path, startIndex, 50);
+    if (rows.length === 0) { noMoreAds = true; break; }
+
+    // See if this path is actually a wrapper; if yes, switch to flat mode
+    flattenIfWrapper(rows, path);
+    if (flatMode) {
+      // Now page the flat list from the beginning (we've just switched modes)
+      while (added < itemsPerPage && flatCursor < flatList.length) {
+        const row = flatList[flatCursor++];
+        const data = row?.payload || {};
+        const text = (data.name || "").toString();
+        const precoInt = parsePriceInt(data.preco);
+        if (
+          text.toUpperCase().includes(qName) &&
+          precoInt >= minVal &&
+          precoInt <= maxVal &&
+          !seenIds.has(row.id)
+        ) {
+          try { createCarAd(data); seenIds.add(row.id); } catch (e) { console.error(e); }
+          added++;
         }
+      }
+      if (flatCursor >= flatList.length) noMoreAds = true;
+      break; // in flat mode, no need to keep fetching rows
+    }
+
+    // Not a wrapper: iterate the normal rows
+    for (const r of rows) {
+      const data = r.payload || {};
+      const text = (data.name || "").toString();
+      const precoInt = parsePriceInt(data.preco);
+      if (
+        text.toUpperCase().includes(qName) &&
+        precoInt >= minVal &&
+        precoInt <= maxVal &&
+        !seenIds.has(r.id)
+      ) {
+        try { createCarAd(data); seenIds.add(r.id); } catch (e) { console.error(e); }
         added++;
         if (added >= itemsPerPage) break;
       }
     }
 
-    // advance cursor to the last numeric key we processed
-    const lastInChunk = chunk[chunk.length - 1];
+    const lastInChunk = rows[rows.length - 1];
     lastKnownKey = lastInChunk.key;
     startIndex = lastKnownKey + 1;
 
-    // If the chunk was smaller than requested, we've likely hit the end
-    if (chunk.length < 50) { if (added === 0) noMoreAds = true; break; }
+    if (rows.length < 50) { if (added === 0) noMoreAds = true; break; }
   }
 
   searchQueryExecuting = false;
@@ -248,10 +319,10 @@ async function searchQuery() {
 /* ---------------- Initial load ---------------- */
 searchQuery();
 
-/* -------------- Optional tiny debug --------------
+/* // Optional: quick peek at first row shape
 (async () => {
-  const path = "anuncios-preco-ascendente";
-  const test = await get(query(ref(db, path), orderByKey(), startAt("0"), limitToFirst(3)));
-  console.log("[DEBUG] first 3 rows raw:", test.val());
+  const path = getSelectedPath();
+  const test = await get(query(ref(db, path), orderByKey(), startAt("0"), limitToFirst(1)));
+  console.log("[DEBUG] first row:", test.val());
 })();
--------------------------------------------------- */
+*/
