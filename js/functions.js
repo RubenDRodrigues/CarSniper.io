@@ -231,9 +231,9 @@ async function searchQuery() {
 /* ---------------- Initial load ---------------- */
 searchQuery();
 
-/* // Optional debug:
+
 (async () => {
   const test = await get(query(ref(db, getSelectedPath()), orderByKey(), startAt("0"), limitToFirst(3)));
   console.log("[DEBUG] first 3 rows:", test.val());
 })();
-*/
+
