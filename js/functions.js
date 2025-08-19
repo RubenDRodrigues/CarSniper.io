@@ -21,10 +21,10 @@ const db  = getDatabase(app);
 
 /* ---------------- State & DOM ---------------- */
 const itemsPerPage = 10;
-let lastKnownKey = null;        // numeric array index we've rendered up to
+let lastKnownKey = null;
 let searchQueryExecuting = false;
 let noMoreAds = false;
-const seenIds = new Set();      // dedupe by ID (names can repeat)
+const seenIds = new Set();
 
 const searchInput = document.getElementById("searchBarId");
 const rangeInputs = document.querySelectorAll(".price-input input");
@@ -33,7 +33,6 @@ const submitBtn   = document.getElementById("submitId");
 
 if (seeMoreBtn)  seeMoreBtn.addEventListener("click", searchQuery);
 if (submitBtn)   submitBtn.addEventListener("click", clear_and_search);
-// Reset & reload when changing the sort radio
 document.querySelectorAll('input[name="test"]').forEach(r =>
   r.addEventListener('change', clear_and_search)
 );
@@ -52,12 +51,30 @@ function getSelectedPath() {
   if (selected === "optPrecoDesc") return "anuncios-preco-descendente";
   return "anuncios-preco-ascendente";
 }
-function isNumericKey(k) { return /^\d+$/.test(k); }
+const NUM_KEY = /^\d+$/;
 
-function parsePriceInt(v) {
-  const s = (v ?? "").toString().replace(/\u202f|\xa0/g, "");
+function getFirst(obj, ...keys) {
+  for (const k of keys) {
+    const v = obj?.[k];
+    if (v !== undefined && v !== null && v !== "") return v;
+  }
+  return undefined;
+}
+
+function getImageUrl(o) {
+  // direct single field
+  let v = getFirst(o, "link_images","image","thumbnail","thumb","photo","picture","img","imageUrl","imageURL");
+  if (v) return v;
+  // array fields
+  const arr = getFirst(o, "images","pictures","photos","imgs");
+  if (Array.isArray(arr) && arr.length) return arr[0];
+  return "";
+}
+
+function parsePriceInt(raw) {
+  const s = (raw ?? "").toString().replace(/\u202f|\xa0/g, "");
   const digits = s.match(/\d+/g);
-  return digits ? parseInt(digits.join(""), 10) : Number.POSITIVE_INFINITY;
+  return digits ? parseInt(digits.join(""), 10) : Number.NaN; // NaN => treat as "no numeric price"
 }
 
 // Accept ["id",{…}] or {"0":"id","1":{…}} (how RTDB arrays sometimes come back)
@@ -75,8 +92,8 @@ async function fetchChunk(path, startIndex, pageSize) {
   if (!snap.exists()) return out;
 
   snap.forEach(child => {
-    const k = child.key;                 // "0","1",...
-    if (!isNumericKey(k)) return;        // skip any stray keys
+    const k = child.key;
+    if (!NUM_KEY.test(k)) return;
     const pair = normalizePair(child.val());
     if (!pair) return;
     const [id, payload] = pair;
@@ -102,12 +119,12 @@ function clear_and_search() {
 
 /* ---------------- Rendering ---------------- */
 function createCarAd(childData){
-  const link_image = childData["link_images"] || childData["image"] || "";
-  const text       = childData["name"] || "(Sem título)";
-  const link       = childData["link"] || "#";
-  const price      = childData["preco"] ?? "—";
-  let quilometer   = childData["quilometros"];
-  const location   = childData["localizacao"] || "—";
+  const link_image = getImageUrl(childData);
+  const text       = getFirst(childData, "name","title") || "(Sem título)";
+  const link       = getFirst(childData, "link","url") || "#";
+  const price      = getFirst(childData, "preco","price") ?? "—";
+  let quilometer   = getFirst(childData, "quilometros","kilometros","quilómetros","kilometers","km","kms");
+  const location   = getFirst(childData, "localizacao","location","cidade","city","local") || "—";
   if (quilometer === undefined || quilometer === null) quilometer = "Não Definido";
 
   const section = document.getElementById("pageSection");
@@ -187,10 +204,12 @@ async function searchQuery() {
   searchQueryExecuting = true;
 
   const qName = (searchInput?.value || "").toUpperCase();
-  const minValRaw = parseInt(rangeInputs?.[0]?.value ?? "0", 10);
-  const maxValRaw = parseInt(rangeInputs?.[1]?.value ?? "999999999", 10);
-  const minVal = Number.isFinite(minValRaw) ? minValRaw : 0;
-  const maxVal = Number.isFinite(maxValRaw) ? maxValRaw : 999999999;
+
+  // Blank input = no limit
+  const minStr = (rangeInputs?.[0]?.value ?? "").trim();
+  const maxStr = (rangeInputs?.[1]?.value ?? "").trim();
+  const minVal = minStr === "" ? 0 : Number.parseInt(minStr, 10);
+  const maxVal = maxStr === "" ? Number.POSITIVE_INFINITY : Number.parseInt(maxStr, 10);
 
   const path = getSelectedPath();
   let startIndex = (lastKnownKey == null) ? 0 : lastKnownKey + 1;
@@ -201,17 +220,22 @@ async function searchQuery() {
     if (rows.length === 0) { noMoreAds = true; break; }
 
     for (const r of rows) {
-      const data = r.payload || {};
-      const text = (data.name || "").toString();
-      const precoInt = parsePriceInt(data.preco);
+      const d = r.payload || {};
+      const titleOrName = (getFirst(d, "name","title") || "").toString();
+
+      // Use preco OR price
+      const rawPrice = getFirst(d, "preco","price");
+      const priceVal = parsePriceInt(rawPrice);
+      const passPrice = Number.isNaN(priceVal)
+        ? true
+        : (priceVal >= minVal && priceVal <= maxVal);
 
       if (
-        text.toUpperCase().includes(qName) &&
-        precoInt >= minVal &&
-        precoInt <= maxVal &&
+        titleOrName.toUpperCase().includes(qName) &&
+        passPrice &&
         !seenIds.has(r.id)
       ) {
-        try { createCarAd(data); seenIds.add(r.id); } catch (e) { console.error(e); }
+        try { createCarAd(d); seenIds.add(r.id); } catch (e) { console.error(e, d); }
         added++;
         if (added >= itemsPerPage) break;
       }
@@ -231,9 +255,8 @@ async function searchQuery() {
 /* ---------------- Initial load ---------------- */
 searchQuery();
 
-
+// Optional: peek to confirm shape
 (async () => {
-  const test = await get(query(ref(db, getSelectedPath()), orderByKey(), startAt("0"), limitToFirst(3)));
-  console.log("[DEBUG] first 3 rows:", test.val());
+  const snap = await get(query(ref(db, getSelectedPath()), orderByKey(), startAt("0"), limitToFirst(3)));
+  console.log("[DEBUG] first 3 rows:", snap.val());
 })();
-
